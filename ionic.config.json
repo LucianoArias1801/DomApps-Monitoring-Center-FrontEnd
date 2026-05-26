@@ -1,0 +1,7 @@
+{
+  "name": "DomAppsMonitoringCenter-Frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
