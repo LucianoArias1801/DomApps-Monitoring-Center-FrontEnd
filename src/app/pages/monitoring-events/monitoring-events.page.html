@@ -1,0 +1,1298 @@
+<ion-header class="app-header">
+  <div class="header-toolbar">
+    <div class="branding-container">
+      <img
+        src="assets/images/domapps-logo.png"
+        alt="Domapps Logo"
+        class="nav-logo"
+      />
+      <h1 class="brand-title">Domapps <b>Monitoring Center</b></h1>
+    </div>
+    <div class="user-controls">
+      <span class="welcome-text">Bienvenido, <strong>Usuario</strong></span>
+
+      <ion-button fill="clear" class="menu-btn" id="user-menu-trigger">
+        <ion-icon name="menu-outline"></ion-icon>
+      </ion-button>
+
+      <ion-popover
+        trigger="user-menu-trigger"
+        dismiss-on-select="true"
+        class="domapps-popover"
+      >
+        <ng-template>
+          <ion-content>
+            <ion-list lines="none" class="user-menu-list">
+              <ion-item button (click)="navigateTo('monitoreo')">
+                <ion-icon name="desktop-outline" slot="start"></ion-icon>
+                <ion-label>Centro de Monitoreo</ion-label>
+              </ion-item>
+
+              <ion-item button (click)="navigateTo('auditorias')">
+                <ion-icon name="clipboard-outline" slot="start"></ion-icon>
+                <ion-label>Centro de Auditorías</ion-label>
+              </ion-item>
+
+              <div class="menu-divider"></div>
+
+              <ion-item button (click)="logout()" class="logout-item">
+                <ion-icon name="log-out-outline" slot="start"></ion-icon>
+                <ion-label>Cerrar Sesión</ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-popover>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="main-content">
+  <ion-grid class="full-height-grid ion-no-padding">
+    <ion-row class="full-height-row">
+      <ion-col size="12" size-lg="8" class="left-column">
+        <div class="actions-bar">
+          <ion-row
+            class="ion-align-items-center ion-justify-content-between full-width-row"
+          >
+            <ion-col size="auto">
+              <h3 class="actions-bar-title">Bitácora de Monitoreo</h3>
+            </ion-col>
+
+            <ion-col size="auto">
+              <div class="action-buttons-group">
+                <ion-button
+                  fill="outline"
+                  class="domapps-action-btn nuevo-evento-btn"
+                  (click)="newEventModal.present()"
+                >
+                  <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                  Nuevo Evento
+                </ion-button>
+
+                <ion-button
+                  fill="outline"
+                  class="domapps-action-btn csv-btn"
+                  (click)="downloadCSV()"
+                >
+                  <ion-icon slot="start" name="download-outline"></ion-icon>
+                  Descargar CSV
+                </ion-button>
+
+                <ion-button
+                  fill="outline"
+                  class="domapps-action-btn"
+                  (click)="openFilters()"
+                >
+                  <ion-icon slot="start" name="funnel-outline"></ion-icon>
+                  Filtrar
+                </ion-button>
+              </div>
+            </ion-col>
+          </ion-row>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Proveedor / Evento</th>
+                <th>Concepto de Unidad</th>
+                <th>Status MIX</th>
+                <th>Tipo Alerta</th>
+                <th>Status</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngIf="isLoading">
+                <td colspan="6" class="loading-row">
+                  <ion-spinner name="crescent"></ion-spinner>
+                  <p>Cargando bitácora en vivo...</p>
+                </td>
+              </tr>
+
+              <ng-container *ngIf="!isLoading">
+                <tr
+                  *ngFor="let event of eventsList"
+                  (click)="onSelectEvent(event)"
+                  [class.active-row]="selectedEvent?.id === event.id"
+                >
+                  <td><span class="fw-500">{{ event.proveedor }}</span></td>
+                  <td class="unidad-col" title="{{ event.conceptoUnidad }}">
+                    {{ event.conceptoUnidad }}
+                  </td>
+                  <td>{{ event.statusMix }}</td>
+                  <td>
+                    <span class="badge-alerta">{{ event.tipoAlerta }}</span>
+                  </td>
+                  <td>{{ event.status }}</td>
+                  <td class="fecha-col">{{ event.fecha }}</td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </ion-col>
+
+      <ion-col size="12" size-lg="4" class="right-column">
+        <div class="detail-panel-card">
+          <ng-container *ngIf="selectedEvent; else emptyState">
+            <div class="evidence-image-placeholder">
+              <ion-icon name="image-outline"></ion-icon>
+            </div>
+
+            <div class="unit-title-row">
+              <h2 class="unit-title">
+                {{ selectedEvent.matricula }} - {{ selectedEvent.eco }} - {{
+                selectedEvent.region }} - {{ selectedEvent.agencia }}
+              </h2>
+              <ion-button
+                fill="clear"
+                class="domapps-icon-btn edit-btn"
+                (click)="openEditModal()"
+              >
+                <ion-icon name="pencil-outline"></ion-icon>
+              </ion-button>
+            </div>
+
+            <div class="event-status-center">
+              <span class="status-badge alert-type"
+                >{{ selectedEvent.tipoAlerta }}</span
+              >
+              <span class="status-badge status-code"
+                >{{ selectedEvent.status }}</span
+              >
+            </div>
+
+            <div class="details-divider">
+              <span>Detalles</span>
+            </div>
+
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="label">Plataforma:</span>
+                <span class="value">{{ selectedEvent.plataforma }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Region:</span>
+                <span class="value">{{ selectedEvent.region }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Agencia:</span>
+                <span class="value">{{ selectedEvent.agencia }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Eco:</span>
+                <span class="value">{{ selectedEvent.eco }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Matricula:</span>
+                <span class="value">{{ selectedEvent.matricula }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Posición:</span>
+                <span class="value">{{ selectedEvent.posicion }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Fecha:</span>
+                <span class="value">{{ selectedEvent.fecha }}</span>
+              </div>
+
+              <div class="detail-item quantity-control">
+                <span class="label">Cantidad:</span>
+                <div class="qty-actions">
+                  <span class="value">{{ selectedEvent.cantidad }}</span>
+                  <ion-button fill="clear" class="add-qty-btn">
+                    <ion-icon name="add-circle-outline"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+            </div>
+
+            <div class="extra-evidence">
+              <ion-button fill="outline" class="domapps-action-btn w-100">
+                Evidencia Fotográfica
+              </ion-button>
+            </div>
+
+            <div class="comment-box">
+              <span class="label">Comentario del Operador</span>
+              <p class="comment-text">{{ selectedEvent.comentario }}</p>
+            </div>
+          </ng-container>
+
+          <ng-template #emptyState>
+            <div class="empty-state">
+              <div class="empty-icon-wrapper">
+                <ion-icon name="list-outline"></ion-icon>
+              </div>
+              <h3>Ningún evento seleccionado</h3>
+              <p>
+                Haz clic en una fila de la bitácora para visualizar los detalles
+                técnicos y operativos aquí.
+              </p>
+            </div>
+          </ng-template>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-modal
+    #newEventModal
+    class="stacking-modal"
+    (ionModalDidDismiss)="resetForm()"
+  >
+    <ng-template>
+      <div class="modal-wrapper">
+        <div class="modal-header">
+          <div>
+            <h2>Ingresar detalles del evento</h2>
+            <span class="modal-subtitle"
+              >Complete la información técnica de la unidad</span
+            >
+          </div>
+          <ion-button
+            fill="clear"
+            (click)="newEventModal.dismiss()"
+            class="close-btn"
+          >
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group custom-dropdown-wrapper">
+            <label class="input-label">Buscar unidad</label>
+
+            <ion-item
+              button
+              lines="none"
+              class="domapps-input-item"
+              (click)="isEcoDropdownOpen = !isEcoDropdownOpen"
+            >
+              <ion-label [class.placeholder-text]="!newEventForm.eco">
+                <ng-container *ngIf="newEventForm.eco">
+                  {{ newEventForm.matricula }}- {{ newEventForm.eco }} {{
+                  newEventForm.region }} {{ newEventForm.agencia }} {{
+                  newEventForm.vehiculo }}
+                </ng-container>
+
+                <ng-container *ngIf="!newEventForm.eco">
+                  Buscar y seleccionar unidad...
+                </ng-container>
+              </ion-label>
+              <ion-icon
+                name="chevron-down-outline"
+                slot="end"
+                color="medium"
+                [class.icon-rotated]="isEcoDropdownOpen"
+              ></ion-icon>
+            </ion-item>
+
+            <div class="dropdown-menu-box" *ngIf="isEcoDropdownOpen">
+              <div class="search-header">
+                <ion-searchbar
+                  placeholder="Buscar por ECO, matrícula o región..."
+                  [(ngModel)]="ecoSearchQuery"
+                  (ionInput)="filterEcos()"
+                  class="domapps-searchbar"
+                  mode="md"
+                >
+                </ion-searchbar>
+              </div>
+
+              <div class="dropdown-list-scroll">
+                <ion-list lines="none">
+                  <ion-item
+                    button
+                    *ngFor="let u of filteredEcos"
+                    (click)="selectEco(u)"
+                  >
+                    <ion-label
+                      >{{ u.matricula }}- {{ u.eco }} {{ u.region }} {{
+                      u.agencia }} {{ u.vehiculo }}</ion-label
+                    >
+                  </ion-item>
+
+                  <ion-item *ngIf="filteredEcos.length === 0">
+                    <ion-label color="medium" class="ion-text-center"
+                      >Sin resultados</ion-label
+                    >
+                  </ion-item>
+                </ion-list>
+              </div>
+            </div>
+
+            <div
+              class="invisible-backdrop"
+              *ngIf="isEcoDropdownOpen"
+              (click)="isEcoDropdownOpen = false"
+            ></div>
+          </div>
+
+          <div class="auto-fill-grid">
+            <div class="info-box">
+              <span>Región:</span>
+              <strong>{{ newEventForm.region || '-' }}</strong>
+            </div>
+
+            <div class="info-box">
+              <span>Agencia:</span>
+              <strong>{{ newEventForm.agencia || '-' }}</strong>
+            </div>
+
+            <div class="info-box">
+              <span>ECO:</span>
+              <strong>{{ newEventForm.eco || '-' }}</strong>
+            </div>
+
+            <div class="info-box">
+              <span>Matrícula:</span>
+              <strong>{{ newEventForm.matricula || '-' }}</strong>
+            </div>
+
+            <div class="info-box">
+              <span>Posición:</span>
+              <strong>{{ newEventForm.posicion || '-' }}</strong>
+            </div>
+
+            <div class="info-box">
+              <span>Vehículo:</span>
+              <strong>{{ newEventForm.vehiculo || '-' }}</strong>
+            </div>
+          </div>
+
+          <div class="divider-modal"></div>
+
+          <div class="form-grid">
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Plataforma</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isPlataformaDropdownOpen = !isPlataformaDropdownOpen"
+              >
+                <ion-label [class.placeholder-text]="!newEventForm.plataforma">
+                  {{ newEventForm.plataforma || 'Seleccione origen' }}
+                </ion-label>
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isPlataformaDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+
+              <div class="dropdown-menu-box" *ngIf="isPlataformaDropdownOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let p of plataformasMock"
+                      (click)="selectPlataforma(p)"
+                    >
+                      <ion-label>{{ p }}</ion-label>
+                    </ion-item>
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isPlataformaDropdownOpen"
+                (click)="isPlataformaDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Evento</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEventoDropdownOpen = !isEventoDropdownOpen"
+              >
+                <ion-label [class.placeholder-text]="!newEventForm.evento">
+                  {{ newEventForm.evento || 'Tipo de evento' }}
+                </ion-label>
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isEventoDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+
+              <div class="dropdown-menu-box" *ngIf="isEventoDropdownOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let e of eventosMock"
+                      (click)="selectEvento(e)"
+                    >
+                      <ion-label>{{ e }}</ion-label>
+                    </ion-item>
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isEventoDropdownOpen"
+                (click)="isEventoDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Estado del Evento</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEstadoEventoDropdownOpen = !isEstadoEventoDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!newEventForm.estadoEvento"
+                >
+                  {{ newEventForm.estadoEvento || 'Calificación' }}
+                </ion-label>
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isEstadoEventoDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+
+              <div class="dropdown-menu-box" *ngIf="isEstadoEventoDropdownOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let s of estadosEventoMock"
+                      (click)="selectEstadoEvento(s)"
+                    >
+                      <ion-label>{{ s }}</ion-label>
+                    </ion-item>
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isEstadoEventoDropdownOpen"
+                (click)="isEstadoEventoDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Estado del Reporte</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEstadoReporteDropdownOpen = !isEstadoReporteDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!newEventForm.estadoReporte"
+                >
+                  {{ newEventForm.estadoReporte || 'Gestión' }}
+                </ion-label>
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isEstadoReporteDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+
+              <div
+                class="dropdown-menu-box"
+                *ngIf="isEstadoReporteDropdownOpen"
+              >
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let r of estadosReporteMock"
+                      (click)="selectEstadoReporte(r)"
+                    >
+                      <ion-label>{{ r }}</ion-label>
+                    </ion-item>
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isEstadoReporteDropdownOpen"
+                (click)="isEstadoReporteDropdownOpen = false"
+              ></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Fecha y Hora del Suceso</label>
+            <div class="domapps-input-item native-input-wrapper">
+              <input
+                type="text"
+                class="custom-native-input"
+                placeholder="dd/mm/aaaa hh:mm AM o PM (CST)"
+                [(ngModel)]="newEventForm.fechaHoraOcurrencia"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Evidencia</label>
+
+            <input
+              type="file"
+              #fileInput
+              accept="image/*,video/*"
+              style="display: none"
+              (change)="onFileSelected($event)"
+            />
+
+            <ion-button
+              *ngIf="!selectedEvidence"
+              fill="outline"
+              class="evidence-btn"
+              mode="md"
+              (click)="fileInput.click()"
+            >
+              <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
+              Seleccionar Evidencia
+            </ion-button>
+
+            <div class="selected-evidence-card" *ngIf="selectedEvidence">
+              <div class="evidence-info">
+                <ion-icon
+                  [name]="evidenceIcon"
+                  class="evidence-icon"
+                ></ion-icon>
+                <div class="evidence-details">
+                  <span class="file-name">{{ selectedEvidence.name }}</span>
+                  <span class="file-size"
+                    >{{ formatBytes(selectedEvidence.size) }}</span
+                  >
+                </div>
+              </div>
+              <ion-button
+                fill="clear"
+                class="remove-file-btn"
+                (click)="removeEvidence()"
+              >
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Comentario</label>
+            <ion-textarea
+              placeholder="Agregue detalles adicionales aquí..."
+              [(ngModel)]="newEventForm.comentario"
+              class="domapps-textarea"
+              rows="3"
+            >
+            </ion-textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <ion-button
+            class="submit-btn"
+            (click)="submitEvent()"
+            [disabled]="isLoading"
+          >
+            <ion-spinner
+              *ngIf="isLoading"
+              name="crescent"
+              slot="start"
+            ></ion-spinner>
+            Subir evento a plataforma
+          </ion-button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal
+    #filterModal
+    class="stacking-modal"
+    (ionModalDidDismiss)="closeFilterDropdowns()"
+  >
+    <ng-template>
+      <div class="modal-wrapper">
+        <div class="modal-header">
+          <div>
+            <h2>Filtrar Bitácora</h2>
+            <span class="modal-subtitle"
+              >Refina los eventos mostrados en pantalla</span
+            >
+          </div>
+          <ion-button
+            fill="clear"
+            (click)="filterModal.dismiss()"
+            class="close-btn"
+          >
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Fecha Inicio</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isStartDateModalOpen = true"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.fechaInicio">
+                  {{ formatDateForUI(filterForm.fechaInicio) || 'Seleccionar...'
+                  }}
+                </ion-label>
+                <ion-icon
+                  name="calendar-outline"
+                  slot="end"
+                  color="medium"
+                ></ion-icon>
+              </ion-item>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Fecha Fin</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEndDateModalOpen = true"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.fechaFin">
+                  {{ formatDateForUI(filterForm.fechaFin) || 'Seleccionar...' }}
+                </ion-label>
+                <ion-icon
+                  name="calendar-outline"
+                  slot="end"
+                  color="medium"
+                ></ion-icon>
+              </ion-item>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Buscar Unidad</label>
+            <div class="domapps-input-item">
+              <input
+                type="text"
+                class="custom-native-input"
+                placeholder="Matrícula, ECO, Región o Agencia..."
+                [(ngModel)]="filterForm.unidadBusqueda"
+              />
+            </div>
+          </div>
+
+          <div class="divider-modal"></div>
+
+          <div class="form-grid">
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Región</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isFilterRegionOpen = !isFilterRegionOpen"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.region"
+                  >{{ filterForm.region || 'Todas' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isFilterRegionOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isFilterRegionOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      (click)="filterForm.region = ''; isFilterRegionOpen = false"
+                      ><ion-label>Todas</ion-label></ion-item
+                    >
+                    <ion-item
+                      button
+                      *ngFor="let r of regionesMock"
+                      (click)="filterForm.region = r; isFilterRegionOpen = false"
+                      ><ion-label>{{ r }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isFilterRegionOpen"
+                (click)="isFilterRegionOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Agencia</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isFilterAgenciaOpen = !isFilterAgenciaOpen"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.agencia"
+                  >{{ filterForm.agencia || 'Todas' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isFilterAgenciaOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isFilterAgenciaOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      (click)="filterForm.agencia = ''; isFilterAgenciaOpen = false"
+                      ><ion-label>Todas</ion-label></ion-item
+                    >
+                    <ion-item
+                      button
+                      *ngFor="let a of agenciasMock"
+                      (click)="filterForm.agencia = a; isFilterAgenciaOpen = false"
+                      ><ion-label>{{ a }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isFilterAgenciaOpen"
+                (click)="isFilterAgenciaOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Tipo de Evento</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isFilterEventoOpen = !isFilterEventoOpen"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.evento"
+                  >{{ filterForm.evento || 'Todos' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isFilterEventoOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isFilterEventoOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      (click)="filterForm.evento = ''; isFilterEventoOpen = false"
+                      ><ion-label>Todos</ion-label></ion-item
+                    >
+                    <ion-item
+                      button
+                      *ngFor="let e of eventosMock"
+                      (click)="filterForm.evento = e; isFilterEventoOpen = false"
+                      ><ion-label>{{ e }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isFilterEventoOpen"
+                (click)="isFilterEventoOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Estado del Evento</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isFilterEstadoEventoOpen = !isFilterEstadoEventoOpen"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.estadoEvento"
+                  >{{ filterForm.estadoEvento || 'Todos' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isFilterEstadoEventoOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isFilterEstadoEventoOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      (click)="filterForm.estadoEvento = ''; isFilterEstadoEventoOpen = false"
+                      ><ion-label>Todos</ion-label></ion-item
+                    >
+                    <ion-item
+                      button
+                      *ngFor="let s of estadosEventoMock"
+                      (click)="filterForm.estadoEvento = s; isFilterEstadoEventoOpen = false"
+                      ><ion-label>{{ s }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isFilterEstadoEventoOpen"
+                (click)="isFilterEstadoEventoOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Estado del Reporte</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isFilterEstadoReporteOpen = !isFilterEstadoReporteOpen"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.estadoReporte"
+                  >{{ filterForm.estadoReporte || 'Todos' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isFilterEstadoReporteOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isFilterEstadoReporteOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      (click)="filterForm.estadoReporte = ''; isFilterEstadoReporteOpen = false"
+                      ><ion-label>Todos</ion-label></ion-item
+                    >
+                    <ion-item
+                      button
+                      *ngFor="let r of estadosReporteMock"
+                      (click)="filterForm.estadoReporte = r; isFilterEstadoReporteOpen = false"
+                      ><ion-label>{{ r }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isFilterEstadoReporteOpen"
+                (click)="isFilterEstadoReporteOpen = false"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer footer-dual">
+          <ion-button fill="clear" class="clear-btn" (click)="clearFilters()"
+            >Limpiar</ion-button
+          >
+          <ion-button
+            class="submit-btn"
+            (click)="applyFilters()"
+            [disabled]="isLoading"
+          >
+            <ion-spinner
+              *ngIf="isLoading"
+              name="crescent"
+              slot="start"
+            ></ion-spinner>
+            Aplicar Filtros
+          </ion-button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal
+    [isOpen]="isStartDateModalOpen"
+    (didDismiss)="isStartDateModalOpen = false"
+    [keepContentsMounted]="true"
+    class="custom-datetime-modal"
+  >
+    <ng-template>
+      <div class="datetime-container-wrapper">
+        <ion-datetime
+          class="universal-date-picker"
+          presentation="date"
+          [value]="filterForm.fechaInicio"
+          [max]="maxFechaInicio"
+          (ionChange)="onStartDateChanged($event)"
+          doneText="Aplicar"
+          cancelText="Cerrar"
+          showDefaultButtons="true"
+          color="primary"
+        >
+        </ion-datetime>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal
+    [isOpen]="isEndDateModalOpen"
+    (didDismiss)="isEndDateModalOpen = false"
+    [keepContentsMounted]="true"
+    class="custom-datetime-modal"
+  >
+    <ng-template>
+      <div class="datetime-container-wrapper">
+        <ion-datetime
+          class="universal-date-picker"
+          presentation="date"
+          [value]="filterForm.fechaFin"
+          [min]="minFechaFin"
+          [max]="maxFechaFin"
+          (ionChange)="onEndDateChanged($event)"
+          doneText="Aplicar"
+          cancelText="Cerrar"
+          showDefaultButtons="true"
+          color="primary"
+        >
+        </ion-datetime>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal
+    #editEventModal
+    class="stacking-modal"
+    (ionModalDidDismiss)="resetEditForm()"
+  >
+    <ng-template>
+      <div class="modal-wrapper">
+        <div class="modal-header">
+          <div>
+            <h2>Modificar detalles del evento</h2>
+            <span class="modal-subtitle"
+              >Actualice la información técnica y operativa</span
+            >
+          </div>
+          <ion-button
+            fill="clear"
+            (click)="editEventModal.dismiss()"
+            class="close-btn"
+          >
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group custom-dropdown-wrapper">
+            <label class="input-label">Buscar unidad</label>
+            <ion-item
+              button
+              lines="none"
+              class="domapps-input-item"
+              (click)="isEditEcoDropdownOpen = !isEditEcoDropdownOpen"
+            >
+              <ion-label [class.placeholder-text]="!editEventForm.eco">
+                <ng-container *ngIf="editEventForm.eco">
+                  {{ editEventForm.matricula }}- {{ editEventForm.eco }} {{
+                  editEventForm.region }} {{ editEventForm.agencia }} {{
+                  editEventForm.vehiculo }}
+                </ng-container>
+                <ng-container *ngIf="!editEventForm.eco"
+                  >Buscar y cambiar unidad...</ng-container
+                >
+              </ion-label>
+              <ion-icon
+                name="chevron-down-outline"
+                slot="end"
+                color="medium"
+                [class.icon-rotated]="isEditEcoDropdownOpen"
+              ></ion-icon>
+            </ion-item>
+
+            <div class="dropdown-menu-box" *ngIf="isEditEcoDropdownOpen">
+              <div class="search-header">
+                <ion-searchbar
+                  placeholder="Buscar por ECO, matrícula..."
+                  [(ngModel)]="ecoSearchQuery"
+                  (ionInput)="filterEcos()"
+                  class="domapps-searchbar"
+                  mode="md"
+                ></ion-searchbar>
+              </div>
+              <div class="dropdown-list-scroll">
+                <ion-list lines="none">
+                  <ion-item
+                    button
+                    *ngFor="let u of filteredEcos"
+                    (click)="selectEditEco(u)"
+                  >
+                    <ion-label
+                      >{{ u.matricula }}- {{ u.eco }} {{ u.region }} {{
+                      u.agencia }} {{ u.vehiculo }}</ion-label
+                    >
+                  </ion-item>
+                  <ion-item *ngIf="filteredEcos.length === 0"
+                    ><ion-label color="medium" class="ion-text-center"
+                      >Sin resultados</ion-label
+                    ></ion-item
+                  >
+                </ion-list>
+              </div>
+            </div>
+            <div
+              class="invisible-backdrop"
+              *ngIf="isEditEcoDropdownOpen"
+              (click)="isEditEcoDropdownOpen = false"
+            ></div>
+          </div>
+
+          <div class="auto-fill-grid">
+            <div class="info-box">
+              <span>Región:</span
+              ><strong>{{ editEventForm.region || '-' }}</strong>
+            </div>
+            <div class="info-box">
+              <span>Agencia:</span
+              ><strong>{{ editEventForm.agencia || '-' }}</strong>
+            </div>
+            <div class="info-box">
+              <span>ECO:</span><strong>{{ editEventForm.eco || '-' }}</strong>
+            </div>
+            <div class="info-box">
+              <span>Matrícula:</span
+              ><strong>{{ editEventForm.matricula || '-' }}</strong>
+            </div>
+            <div class="info-box">
+              <span>Posición:</span
+              ><strong>{{ editEventForm.posicion || '-' }}</strong>
+            </div>
+            <div class="info-box">
+              <span>Vehículo:</span
+              ><strong>{{ editEventForm.vehiculo || '-' }}</strong>
+            </div>
+          </div>
+
+          <div class="divider-modal"></div>
+
+          <div class="form-grid">
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Plataforma</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEditPlataformaDropdownOpen = !isEditPlataformaDropdownOpen"
+              >
+                <ion-label [class.placeholder-text]="!editEventForm.plataforma"
+                  >{{ editEventForm.plataforma || 'Seleccione' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isEditPlataformaDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+              <div
+                class="dropdown-menu-box"
+                *ngIf="isEditPlataformaDropdownOpen"
+              >
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let p of plataformasMock"
+                      (click)="editEventForm.plataforma = p; isEditPlataformaDropdownOpen = false"
+                      ><ion-label>{{ p }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isEditPlataformaDropdownOpen"
+                (click)="isEditPlataformaDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Evento</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEditEventoDropdownOpen = !isEditEventoDropdownOpen"
+              >
+                <ion-label [class.placeholder-text]="!editEventForm.evento"
+                  >{{ editEventForm.evento || 'Seleccione' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isEditEventoDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isEditEventoDropdownOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let e of eventosMock"
+                      (click)="editEventForm.evento = e; isEditEventoDropdownOpen = false"
+                      ><ion-label>{{ e }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isEditEventoDropdownOpen"
+                (click)="isEditEventoDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Estado del Evento</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEditEstadoEventoDropdownOpen = !isEditEstadoEventoDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!editEventForm.estadoEvento"
+                  >{{ editEventForm.estadoEvento || 'Seleccione' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isEditEstadoEventoDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+              <div
+                class="dropdown-menu-box"
+                *ngIf="isEditEstadoEventoDropdownOpen"
+              >
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let s of estadosEventoMock"
+                      (click)="editEventForm.estadoEvento = s; isEditEstadoEventoDropdownOpen = false"
+                      ><ion-label>{{ s }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isEditEstadoEventoDropdownOpen"
+                (click)="isEditEstadoEventoDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Estado del Reporte</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEditEstadoReporteDropdownOpen = !isEditEstadoReporteDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!editEventForm.estadoReporte"
+                  >{{ editEventForm.estadoReporte || 'Seleccione' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isEditEstadoReporteDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+              <div
+                class="dropdown-menu-box"
+                *ngIf="isEditEstadoReporteDropdownOpen"
+              >
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let r of estadosReporteMock"
+                      (click)="editEventForm.estadoReporte = r; isEditEstadoReporteDropdownOpen = false"
+                      ><ion-label>{{ r }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isEditEstadoReporteDropdownOpen"
+                (click)="isEditEstadoReporteDropdownOpen = false"
+              ></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Fecha y Hora del Suceso</label>
+            <div class="domapps-input-item native-input-wrapper">
+              <input
+                type="text"
+                class="custom-native-input"
+                [(ngModel)]="editEventForm.fechaHoraOcurrencia"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Comentario</label>
+            <ion-textarea
+              [(ngModel)]="editEventForm.comentario"
+              class="domapps-textarea"
+              rows="3"
+            ></ion-textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <ion-button
+            class="submit-btn"
+            (click)="updateEvent()"
+            [disabled]="isLoading"
+          >
+            <ion-spinner
+              *ngIf="isLoading"
+              name="crescent"
+              slot="start"
+            ></ion-spinner>
+            Guardar Cambios
+          </ion-button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+</ion-content>

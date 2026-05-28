@@ -35,3 +35,281 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+// ? ==========================================================================
+// ? 1. VARIABLES GLOBALES Y RESET DE LA APLICACIÓN
+// ? ==========================================================================
+
+:root {
+  //* Paleta de Colores Base
+  --app-bg: #f4f6f8;
+  --app-primary: #3880ff;
+  --app-primary-dark: #005bb5;
+  
+  //* Paleta de Texto
+  --text-dark: #333333;
+  --text-main: #444444;
+  --text-muted: #888888;
+  --text-light: #999999;
+
+  //* Paleta de Riesgos y Estados (HSE)
+  --status-safe-bg: #dcfce7;
+  --status-safe-text: #22c55e;
+  --status-safe-border: #c8e6c9;
+
+  --status-warning-bg: #fef3c7;
+  --status-warning-text: #f59e0b;
+  --status-warning-border: #ffcdd2;
+
+  --status-danger-bg: #fee2e2;
+  --status-danger-text: #ef4444;
+  --status-danger-border: #ffcdd2;
+}
+
+// 3. Forzamos el fondo general de la app
+body, ion-content {
+  --background: var(--app-bg);
+  background-color: var(--app-bg);
+}
+
+// ? ==========================================================================
+// ? 2. TIPOGRAFÍA Y UTILIDADES GLOBALES
+// ? ==========================================================================
+
+//* Alineación y formato general
+.text-center { text-align: center; }
+.centered-title { font-size: 18px; color: var(--text-dark); font-weight: 700; }
+
+//* Manejo de textos largos
+.truncate-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+//* Divisores visuales
+.section-divider { height: 20px; }
+.divider { height: 1px; background: #e0e0e0; margin: 15px 0; }
+
+//* Estados vacíos (Empty States)
+.empty-state {
+  text-align: center; padding: 40px 20px; color: var(--text-light);
+  p { margin: 0; font-size: 13px; }
+}
+.empty-state-small {
+  text-align: center; padding: 15px; background: #f9f9f9;
+  border-radius: 8px; color: var(--text-light); font-size: 12px; font-style: italic;
+}
+
+// ? ==========================================================================
+// ? 3. COMPONENTES VISUALES COMPARTIDOS (UI KITS)
+// ? ==========================================================================
+
+//* Contenedores Principales (Paneles y Tarjetas)
+// 3. Este es el contenedor maestro para gráficos o listas
+.dashboard-panel {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  padding: 15px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+
+  &.risk-border-high { border-top: 4px solid var(--status-danger-text); }
+  &.risk-border-medium { border-top: 4px solid var(--status-warning-text); }
+}
+
+//* Cabeceras de paneles
+.panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0;
+  
+  .header-title {
+    font-size: 14px; font-weight: 700; color: var(--text-main); text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px;
+    ion-icon { color: var(--app-primary); font-size: 16px; }
+  }
+}
+
+//* Cajas de Protocolo / Alertas contextuales
+.protocol-box { 
+  background-color: #fff9e6; border: 1px solid #ffe082; 
+  border-left: 5px solid #ffca28; border-radius: 8px; 
+  padding: 15px; margin-bottom: 15px;
+  
+  .protocol-header { display: flex; align-items: center; gap: 8px; color: #f57f17; font-weight: bold; font-size: 12px; text-transform: uppercase; } 
+  .protocol-title { margin: 5px 0; font-size: 16px; font-weight: 700; color: var(--text-dark); } 
+  .protocol-body { font-size: 14px; color: var(--text-main); line-height: 1.4; } 
+}
+
+//* Botones Maestros
+.new-event-btn, .vision-btn {
+  --background: var(--app-primary);
+  --color: white;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: 0.3s ease;
+  
+  &:hover { --background: var(--app-primary-dark); }
+}
+
+// ? ==========================================================================
+// ? 4. SISTEMA DE BADGES Y ESTADOS (HSE)
+// ? ==========================================================================
+
+//* Badges base (Píldoras)
+.risk-badge, .status-badge {
+  padding: 2px 12px; border-radius: 20px; font-size: 10px;
+  font-weight: 800; display: inline-block; text-transform: uppercase;
+}
+
+//* Variantes de color por riesgo
+.bg-critico, .bg-high, .status-danger { 
+  background-color: var(--status-danger-bg); color: var(--status-danger-text); 
+}
+.bg-aviso, .bg-medium, .status-warning { 
+  background-color: var(--status-warning-bg); color: var(--status-warning-text); 
+}
+.bg-seguro, .bg-low, .status-safe { 
+  background-color: var(--status-safe-bg); color: var(--status-safe-text); 
+}
+
+//* Chips de Estado para tablas (Ej. Pendiente / Atendido)
+.status-chip {
+  display: inline-flex; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; justify-content: center;
+  &.pending { background: #ffebee; color: #c62828; }
+  &.attended { background: #e8f5e9; color: #2e7d32; }
+}
+
+// ? ==========================================================================
+// ? 5. TABLAS DE MONITOREO Y BITÁCORA
+// ? ==========================================================================
+
+//* Tabla principal de datos
+.monitoring-table {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  
+  thead th { 
+    position: sticky; top: 0; background: #fff; z-index: 10;
+    font-size: 11px; text-transform: uppercase; color: var(--text-light); 
+    padding: 10px; border-bottom: 2px solid #f0f0f0; text-align: left;
+    letter-spacing: 0.5px;
+  }
+  
+  tbody td { 
+    padding: 10px; font-size: 12px; color: var(--text-dark); 
+    border-bottom: 1px solid #f9f9f9; vertical-align: middle; 
+  }
+  
+  tbody tr:hover { background-color: #f2f5f9 !important; transition: background-color 0.2s ease; cursor: pointer; }
+  
+  // 3. Estilos específicos para celdas de la tabla
+  .time-col { font-family: 'Courier New', monospace; font-weight: 700; color: var(--text-main); }
+  .comment-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #666; }
+  .event-cell-blue { color: var(--app-primary); font-weight: 700; strong { letter-spacing: 0.5px; } }
+}
+
+// ? ==========================================================================
+// ? 6. FORMULARIOS E INPUTS REACTIVOS
+// ? ==========================================================================
+
+//* Cajas de solo lectura
+.read-only-item { 
+  --background: #f4f5f8; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e0e0e0;
+}
+
+//* Selectores y Buscadores
+.custom-select-item {
+  --background: #ffffff; --padding-start: 10px;
+  border: 1px solid #e0e0e0; border-radius: 8px; margin-top: 5px; font-size: 0.9rem;
+}
+.custom-searchbar { 
+  --background: #f4f5f8; --box-shadow: none; --border-radius: 8px; height: 32px; padding: 0; 
+}
+
+//* Controles de Fecha (Date Range)
+.date-range-row { display: flex; gap: 8px; width: 100%; }
+.date-field { flex: 1 1 0%; min-width: 0; display: flex; flex-direction: column; }
+.date-label { font-size: 0.65rem; color: #666; font-weight: 700; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.custom-date-input {
+  width: 100%; background-color: #f4f5f8; border-radius: 6px; font-size: 0.75rem; 
+  font-weight: 600; color: var(--text-main); border: 1px solid #e0e0e0; 
+  padding: 8px 4px; font-family: inherit; outline: none; box-sizing: border-box; 
+  
+  &::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: pointer; padding: 0; margin: 0; }
+  &:focus { border-color: var(--app-primary); background-color: #fff; }
+}
+
+// ? ==========================================================================
+// ? 7. ANIMACIONES COMPARTIDAS
+// ? ==========================================================================
+
+//* Entrada suave de elementos
+.fade-in { animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+//* Entrada para items de lista (ion-item)
+ion-item { animation: slideIn 0.3s ease-out; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+//* Alertas de pulso (Para mapas o indicadores en vivo)
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(45, 211, 111, 0.7); }
+  70% { box-shadow: 0 0 0 6px rgba(45, 211, 111, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(45, 211, 111, 0); }
+}
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(235, 68, 90, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(235, 68, 90, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(235, 68, 90, 0); }
+}
+
+// ? ==========================================================================
+// ? 8. OVERRIDES DE LEAFLET (ESTILOS GLOBALES PARA EL MAPA)
+// ? ==========================================================================
+// 3. Angular inyecta Leaflet dinámicamente, por lo que sus estilos DEBEN ser globales
+.custom-ehs-pin { background: transparent !important; border: none !important; }
+.ehs-map-tooltip { padding: 8px !important; border-radius: 8px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; border: none !important; }
+.tactical-tooltip { background: rgba(15, 23, 42, 0.9) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 8px !important; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important; backdrop-filter: blur(4px); color: white !important; padding: 10px !important; }
+.tactical-tooltip::before { display: none !important; }
+
+// ? ==========================================================================
+// ? COMPONENTES DE SELECCIÓN DE FECHA (ION-DATETIME UNIVERSAL)
+// ? ==========================================================================
+
+/* Estilo del Contenedor de la Ventana Modal */
+.custom-datetime-modal {
+  --width: 90%;
+  --max-width: 350px;
+  --height: auto;
+  --border-radius: 16px;
+  --box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Encapsulamiento Ciego para Prevenir Invisibilidad en Modo Oscuro */
+.datetime-container-wrapper {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden; // Bloquea desbordamientos y scrolls fantasma
+}
+
+/* Gobernanza Total sobre ion-datetime */
+ion-datetime.universal-date-picker {
+  --background: #ffffff;
+  --background-rgb: 255, 255, 255;
+  --title-color: #3880ff;
+  --color: #222222;
+  --wheel-item-color: #222222;
+  --month-year-button-color: #222222;
+  --wheel-highlight-background: #f0f4f8;
+  color: #222222;
+  width: 100%;
+}

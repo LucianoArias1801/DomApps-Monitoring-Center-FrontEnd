@@ -1,0 +1,206 @@
+// ? ==========================================================================
+// ? 1. LAYOUT Y CENTRADO
+// ? ==========================================================================
+
+.login-content {
+  --background: #fdfdfd; // Un gris azulado muy suave de fondo
+}
+
+.login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+}
+
+.login-card {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 440px;
+  border: 1px solid #eef2f6;
+}
+
+// ? ==========================================================================
+// ? 2. ELEMENTOS DE CABECERA (BRANDING & BIENVENIDA)
+// ? ==========================================================================
+
+.login-header {
+  display: flex;
+  flex-direction: column; // 3. Apila el bloque del nombre/logo arriba y la bienvenida abajo
+  align-items: flex-start; // 3. Todo perfectamente alineado a la izquierda
+  gap: 24px; // 3. Espaciado elegante entre el branding y el texto de bienvenida
+  margin-bottom: 32px;
+}
+
+//* Contenedor de Logo + Nombre de la app
+.branding-container {
+  display: flex;
+  align-items: center; // 3. Centra el logo verticalmente respecto al texto
+  justify-content: flex-start;
+  gap: 12px; // 3. Espacio entre el logo y el nombre de la app
+  width: 100%;
+
+  .nav-logo {
+    height: 80px; // Tamaño controlado y profesional para el logo
+    width: auto;
+    object-fit: contain;
+  }
+}
+
+//* Texto del nombre de la plataforma (Estilo basado en tu dashboard de referencia)
+.brand-title {
+  font-size: 1.15rem;
+  letter-spacing: -0.5px;
+  color: #1e293b;
+  margin: 0;
+  font-weight: 500;
+  
+  b { 
+    color: #3880ff; // Destaca "Monitoring Center" con el azul principal de Domapps
+    font-weight: 700;
+  }
+}
+
+//* Bloque de textos inferiores
+.welcome-container {
+  text-align: left;
+
+  .login-title {
+    color: #0f172a;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+  }
+
+  .login-subtitle {
+    color: #64748b;
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
+// ? ==========================================================================
+// ? 3. FORMULARIO E INPUTS
+// ? ==========================================================================
+
+.input-group {
+  margin-bottom: 20px;
+
+  .field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+}
+
+.custom-input-item {
+  --background: #ffffff;
+  --padding-start: 12px;
+  border-radius: 8px;
+
+  border: 2px solid #7a7b7e;
+  transition: 0.2s ease-in-out;
+
+  &.item-has-focus {
+    border-color: #3880ff;
+    box-shadow: 0 0 0 3px rgba(56, 128, 255, 0.1);
+  }
+
+  ion-input {
+    font-size: 15px;
+    --placeholder-color: #4c4e52;
+    --color: #0e141d;
+  }
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  font-size: 13px;
+
+  .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #475569;
+    
+    ion-checkbox {
+      --size: 18px;
+      --border-radius: 4px;
+    }
+  }
+
+  .forgot-link {
+    color: #3880ff;
+    text-decoration: none;
+    font-weight: 600;
+  }
+}
+
+.login-btn {
+  border-radius: 8px;
+  box-shadow: none;
+  font-weight: 700;
+  height: 48px;
+  margin-top: 10px;
+}
+
+.login-footer {
+  margin-top: 32px;
+  p {
+    font-size: 14px;
+    color: #64748b;
+    a {
+      color: #3880ff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  }
+}
+
+// ? ==========================================================================
+// ? 4. BOTONES ESPECÍFICOS DEL PROTOTIPO
+// ? ==========================================================================
+
+// 3. Sobrescribimos el text-center del header porque en tu diseño va a la izquierda
+.login-header {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.login-btn {
+  border-radius: 6px;
+  box-shadow: none;
+  font-weight: 500;
+  text-transform: none; // Evita que el texto se ponga en mayúsculas
+  height: 44px;
+  margin-bottom: 15px;
+  font-size: 15px;
+  letter-spacing: 0;
+
+  &.primary-btn {
+    --background: #3b82f6; // El azul exacto de tu prototipo
+  }
+
+  &.google-btn {
+    --background: #ffffff;
+    --color: #374151;
+    --border-color: #d1d5db;
+    --border-style: solid;
+    --border-width: 1px;
+    
+    .google-icon {
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+    }
+  }
+}
