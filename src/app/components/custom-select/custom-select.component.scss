@@ -1,0 +1,141 @@
+// ? ==========================================================================
+// ? ESTILOS ENCAPSULADOS PARA EL COMPONENTE CUSTOM-SELECT
+// ? ==========================================================================
+
+// Contenedor principal relativo para anclar el menú absoluto
+.custom-dropdown-wrapper {
+  position: relative;
+  width: 100%;
+
+  // Opacidad cuando el componente está deshabilitado
+  &.disabled-wrapper {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+// Etiqueta del Input (Label)
+.input-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+// La caja principal (El botón que simula ser un input)
+.domapps-input-item {
+  --background: #ffffff; 
+  --border-radius: 8px;
+  --padding-start: 12px;
+  border: 1px solid #cbd5e1; 
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); 
+  font-size: 14px;
+  --min-height: 48px; // Altura estándar para alinear con botones
+
+  // Color oscuro para el texto cuando hay algo seleccionado
+  ion-label {
+    --color: #1e293b !important; 
+    color: #1e293b !important;   
+    font-weight: 500;
+  }
+
+  // Clase dinámica cuando no hay selección (Placeholder gris)
+  .placeholder-text {
+    --color: #94a3b8 !important;
+    color: #94a3b8 !important; 
+  }
+
+  // Animación del icono de flecha
+  ion-icon {
+    transition: transform 0.3s ease;
+    &.icon-rotated {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+// ==========================================================================
+// EL MENÚ DESPLEGABLE FLOTANTE (DROPDOWN)
+// ==========================================================================
+.dropdown-menu-box {
+  position: absolute;
+  top: 100%; 
+  left: 0;
+  width: 100%; 
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 100; 
+  margin-top: 4px; 
+  overflow: hidden;
+  animation: slideDownFade 0.2s ease-out;
+
+  // Cabecera del buscador interno
+  .search-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    
+    ion-searchbar.domapps-searchbar {
+      --background: #ffffff;
+      --box-shadow: none;
+      --border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      padding: 8px 12px;
+      --icon-color: #64748b;
+      
+      --color: #1e293b !important;
+      --placeholder-color: #64748b !important;
+      --placeholder-opacity: 1 !important;
+      color: #1e293b; 
+    }
+  }
+
+  // Contenedor de la lista con scroll independiente
+  .dropdown-list-scroll {
+    max-height: 220px; 
+    overflow-y: auto;
+    background: #ffffff; 
+
+    ion-list {
+      background: #ffffff; 
+      padding: 0; 
+      margin: 0;
+      
+      ion-item {
+        --background: #ffffff;
+        --color: #1e293b;
+        font-size: 14px;
+        --min-height: 44px;
+        
+        &:hover {
+          --background: #f1f5f9;
+          --color: #3880ff; // Letra azul corporativa al pasar el mouse
+        }
+      }
+    }
+  }
+}
+
+// ==========================================================================
+// CAPA INVISIBLE Y ANIMACIONES
+// ==========================================================================
+
+// Telón de fondo invisible para detectar el clic afuera y cerrar el menú
+.invisible-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 90; // Justo por debajo del menú (z-index: 100)
+}
+
+// Animación fluida de aparición (Slide-down effect)
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,2 +1,10 @@
 // For information on how to create your own theme, please refer to:
 // https://ionicframework.com/docs/theming/
+@media (prefers-color-scheme: dark) {
+  /* ... un montón de variables CSS de colores oscuros ... */
+}
+
+.domapps-input-item {
+  --background: #ffffff !important; /* 🔥 Fuerza el fondo blanco en modo claro y oscuro */
+  --color: #1e293b !important;      /* 🔥 Fuerza el texto oscuro para que se lea bien */
+}

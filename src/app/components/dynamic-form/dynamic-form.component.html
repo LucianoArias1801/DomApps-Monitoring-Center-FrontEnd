@@ -1,0 +1,165 @@
+<div class="loading-state" *ngIf="isLoading">
+  <ion-spinner name="crescent" color="primary"></ion-spinner>
+  <p>Generando formulario desde la base de datos...</p>
+</div>
+
+<form
+  [formGroup]="dynamicFormGroup"
+  (ngSubmit)="prepareSubmit()"
+  *ngIf="!isLoading && dynamicFormGroup"
+>
+  <div class="divider-modal"></div>
+
+  <div class="form-grid">
+    <ng-container *ngFor="let field of formStructure.fields">
+      <ng-container
+        *ngIf="!hiddenFields.includes(field.fieldName.toUpperCase().trim())"
+      >
+        <div
+          class="form-group"
+          [ngClass]="{
+            'half-width': field.type === 'SELECT',
+            'full-width': field.type !== 'SELECT',
+          }"
+          [ngSwitch]="
+            field.fieldName.toUpperCase().includes('FECHA')
+              ? 'FECHA_CST'
+              : field.type
+          "
+        >
+          <ng-container *ngSwitchCase="'FECHA_CST'">
+            <label class="input-label">
+              {{ field.fieldName }}
+              <span *ngIf="field.required" style="color: #ef4444">*</span>
+            </label>
+            <ion-item lines="none" class="domapps-input-item">
+              <ion-input
+                [formControlName]="'field_' + field.id"
+                type="text"
+                placeholder="dd/mm/aaaa hh:mm AM o PM (CST)"
+                style="--color: #1e293b"
+              >
+              </ion-input>
+            </ion-item>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'SELECT'">
+            <app-custom-select
+              [formControlName]="'field_' + field.id"
+              [label]="field.fieldName"
+              [placeholder]="'Seleccione ' + (field.fieldName | lowercase)"
+              [options]="field.options || []"
+            >
+            </app-custom-select>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'MULTI_SELECT'">
+            <label class="input-label">
+              {{ field.fieldName }}
+              <span *ngIf="field.required" style="color: #ef4444">*</span>
+            </label>
+            <ion-item lines="none" class="domapps-input-item">
+              <ion-select
+                [formControlName]="'field_' + field.id"
+                placeholder="Seleccione opciones..."
+                multiple="true"
+                cancelText="Cancelar"
+                okText="Aceptar"
+                toggleIcon="chevron-down-outline"
+                style="
+                  width: 100%;
+                  max-width: 100%;
+                  color: #1e293b;
+                  --placeholder-color: #94a3b8;
+                  --placeholder-opacity: 1;
+                "
+              >
+                <ion-select-option
+                  *ngFor="let opt of field.options"
+                  [value]="opt.id"
+                >
+                  {{ opt.text }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'TEXT'">
+            <label class="input-label">
+              {{ field.fieldName }}
+              <span *ngIf="field.required" style="color: #ef4444">*</span>
+            </label>
+            <ion-item lines="none" class="domapps-input-item">
+              <ion-input
+                [formControlName]="'field_' + field.id"
+                type="text"
+                [placeholder]="'Ingrese ' + (field.fieldName | lowercase)"
+                style="--color: #1e293b"
+              >
+              </ion-input>
+            </ion-item>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'NUMBER'">
+            <label class="input-label">
+              {{ field.fieldName }}
+              <span *ngIf="field.required" style="color: #ef4444">*</span>
+            </label>
+            <ion-item lines="none" class="domapps-input-item">
+              <ion-input
+                [formControlName]="'field_' + field.id"
+                type="number"
+                inputmode="numeric"
+                placeholder="0"
+                style="--color: #1e293b"
+              >
+              </ion-input>
+              <div
+                slot="end"
+                *ngIf="
+                  field.fieldName.toUpperCase().trim().includes('VELOCIDAD') ||
+                  field.fieldName.toUpperCase().trim().includes('KM/H')
+                "
+                style="
+                  color: #94a3b8;
+                  font-weight: 600;
+                  font-size: 13px;
+                  margin-left: 8px;
+                "
+              >
+                KM/H
+              </div>
+            </ion-item>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'DATETIME'">
+            <label class="input-label">
+              {{ field.fieldName }}
+              <span *ngIf="field.required" style="color: #ef4444">*</span>
+            </label>
+            <div class="domapps-input-item native-input-wrapper">
+              <input
+                type="datetime-local"
+                class="custom-native-input"
+                [formControlName]="'field_' + field.id"
+              />
+            </div>
+          </ng-container>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+
+  <div class="divider-modal"></div>
+
+  <div class="form-group full-width" style="margin-top: 15px">
+    <label class="input-label">Observaciones Generales</label>
+    <ion-textarea
+      formControlName="general_comments"
+      placeholder="Agregue detalles adicionales generales aquí..."
+      class="domapps-textarea"
+      rows="3"
+    >
+    </ion-textarea>
+  </div>
+</form>

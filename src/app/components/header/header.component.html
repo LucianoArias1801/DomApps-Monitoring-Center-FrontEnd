@@ -1,0 +1,57 @@
+<ion-header class="app-header">
+  <div class="header-toolbar">
+    <div class="branding-container">
+      <img
+        src="assets/images/domapps-logo.png"
+        alt="Domapps Logo"
+        class="nav-logo"
+      />
+      <h1 class="brand-title">Domapps <b>Monitoring Center</b></h1>
+    </div>
+    <div class="user-controls">
+      <span class="welcome-text"
+        >Bienvenido, <strong>{{ username }}</strong></span
+      >
+
+      <ion-button
+        fill="clear"
+        class="menu-btn"
+        (click)="menuPopover.present($event)"
+      >
+        <ion-icon name="menu-outline"></ion-icon>
+      </ion-button>
+
+      <ion-popover
+        #menuPopover
+        dismiss-on-select="true"
+        class="domapps-popover"
+      >
+        <ng-template>
+          <ion-content>
+            <ion-list lines="none" class="user-menu-list">
+              <ion-item
+                *ngFor="let template of formTemplates"
+                button
+                (click)="navigateToRecords(template.id); menuPopover.dismiss()"
+              >
+                <ion-icon name="document-text-outline" slot="start"></ion-icon>
+                <ion-label>{{ template.name | titlecase }}</ion-label>
+              </ion-item>
+
+              <div class="menu-divider"></div>
+
+              <ion-item
+                button
+                (click)="logout(); menuPopover.dismiss()"
+                class="logout-item"
+              >
+                <ion-icon name="log-out-outline" slot="start"></ion-icon>
+                <ion-label>Cerrar Sesión</ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-popover>
+    </div>
+  </div>
+</ion-header>

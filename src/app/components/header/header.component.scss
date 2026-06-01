@@ -1,0 +1,174 @@
+// ? ==========================================================================
+// ? 1. CABECERA MAESTRA (HEADER Y BRANDING)
+// ? ==========================================================================
+
+.app-header {
+  background-color: #ffffff;
+  // 3. Añadimos la sombra suave y el borde casi invisible de tu archivo de referencia
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.header-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 24px;
+  min-height: 65px; // Altura estándar para dashboards de escritorio
+}
+
+//* Contenedor Izquierdo
+.branding-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .nav-logo {
+    height: 42px; // Ligeramente más compacto que el login
+    width: auto;
+    object-fit: contain;
+  }
+}
+
+.brand-title {
+  font-family: -apple-system, system-ui, sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: -0.5px;
+  color: #1e293b;
+  margin: 0;
+  font-weight: 500;
+  
+  b { 
+    color: #3880ff; // El azul corporativo de Domapps
+    font-weight: 700;
+  }
+}
+
+//* Contenedor Derecho
+.user-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.welcome-text {
+  font-size: 0.95rem;
+  color: #64748b; // Gris tenue para "Bienvenido"
+  font-weight: 500;
+  
+  strong {
+    color: #1e293b; // Gris oscuro para destacar el nombre
+    font-weight: 700;
+  }
+}
+
+// 3. Damos estilo al botón de menú asegurando que Ionic no sobreescriba el color
+::ng-deep ion-button.menu-btn {
+  --color: #475569 !important;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --border-radius: 6px;
+  margin: 0;
+  
+  ion-icon {
+    font-size: 1.8rem; // Tamaño grande como en el wireframe
+  }
+  
+  &:hover {
+    --color: #3880ff !important;
+    --background: rgba(56, 128, 255, 0.05) !important;
+  }
+}
+
+ion-content.main-content {
+  --background: #f1f5f9; // Gris de fondo que hace resaltar las tarjetas blancas
+}
+
+.full-height-grid {
+  width: 100%;
+  margin: 0;
+  
+  // 3. Separación del Header y márgenes en móvil (Flujo vertical libre)
+  margin-top: 16px; 
+  padding: 0 16px 16px 16px;
+
+  @media (min-width: 992px) {
+    // 3. En PC (Breakpoint 'lg' de Ionic): Forzamos el alto exacto de la pantalla
+    // [100vh] - [65px del Header] - [32px de separación superior e inferior]
+    height: calc(100vh - 65px - 32px); 
+    margin-top: 16px;
+    padding: 0 16px; 
+  }
+}
+
+.full-height-row {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  
+  @media (min-width: 992px) {
+    height: 100%; // Obliga a la fila a abarcar el alto total del Grid en escritorio
+  }
+}
+
+// ? ==========================================================================
+// ? 6. MENÚ DESPLEGABLE (POPOVER)
+// ? ==========================================================================
+
+// Perforamos el shadow DOM para darle estilo al contenedor general del popover
+::ng-deep {
+  ion-popover.domapps-popover {
+    --background: #ffffff;
+    --border-radius: 12px;
+    --box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --min-width: 220px;
+    
+    // Separamos el popover un poquito del botón
+    --offset-y: 8px; 
+  }
+}
+
+.user-menu-list {
+  padding: 8px 0;
+  background: #ffffff; // Fondo de la lista
+  
+  ion-item {
+    --background: #ffffff; // <-- ESTA ES LA CLAVE: Fuerza el fondo blanco en el ítem
+    --color: #1e293b;      // Fuerza el texto oscuro
+    --padding-start: 16px;
+    --inner-padding-end: 16px;
+    --min-height: 48px;
+    font-size: 14px;
+    font-weight: 500;
+    
+    ion-icon {
+      color: #64748b;
+      font-size: 20px;
+      margin-right: 12px;
+      transition: color 0.2s ease;
+    }
+    
+    &:hover {
+      --background: #f8fafc;
+      ion-icon { color: #3880ff; }
+    }
+    
+    &.logout-item {
+      --color: #ef4444; 
+      
+      ion-icon { 
+        color: #ef4444; 
+      }
+      
+      &:hover {
+        --background: #fef2f2; 
+      }
+    }
+  }
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #e2e8f0;
+  margin: 8px 0;
+}

@@ -1,0 +1,109 @@
+<div class="form-group custom-dropdown-wrapper">
+  <label class="input-label">Buscar unidad</label>
+
+  <ion-item
+    button
+    lines="none"
+    class="domapps-input-item"
+    (click)="toggleDropdown()"
+  >
+    <ion-label [class.placeholder-text]="!selectedVehicle">
+      <ng-container *ngIf="selectedVehicle">
+        {{ selectedVehicle.label }}
+      </ng-container>
+
+      <ng-container *ngIf="!selectedVehicle">
+        Buscar y seleccionar unidad...
+      </ng-container>
+    </ion-label>
+    <ion-icon
+      name="chevron-down-outline"
+      slot="end"
+      color="medium"
+      [class.icon-rotated]="isDropdownOpen"
+    ></ion-icon>
+  </ion-item>
+
+  <div class="dropdown-menu-box" *ngIf="isDropdownOpen">
+    <div class="search-header">
+      <ion-searchbar
+        placeholder="Escriba el ECO..."
+        [value]="searchQuery"
+        (ionInput)="onSearchInput($event)"
+        class="domapps-searchbar"
+        mode="md"
+        debounce="100"
+      >
+      </ion-searchbar>
+    </div>
+
+    <div class="dropdown-list-scroll">
+      <ion-list lines="none">
+        <ion-item *ngIf="isSearching">
+          <ion-spinner name="dots" color="primary"></ion-spinner>
+          <ion-label style="margin-left: 10px; color: #64748b"
+            >Buscando unidad...</ion-label
+          >
+        </ion-item>
+
+        <ion-item
+          button
+          *ngFor="let v of searchResults"
+          (click)="selectVehicle(v)"
+        >
+          <ion-label> {{ v.label }} </ion-label>
+          <ion-note
+            *ngIf="!v.isActual"
+            slot="end"
+            color="medium"
+            style="
+              font-size: 11px;
+              border: 1px solid #e2e8f0;
+              padding: 2px 6px;
+              border-radius: 4px;
+            "
+          >
+            MIX
+          </ion-note>
+        </ion-item>
+
+        <ion-item
+          *ngIf="
+            searchResults.length === 0 && !isSearching && searchQuery !== ''
+          "
+        >
+          <ion-label color="medium" class="ion-text-center"
+            >No se encontraron unidades</ion-label
+          >
+        </ion-item>
+      </ion-list>
+    </div>
+  </div>
+
+  <div
+    class="invisible-backdrop"
+    *ngIf="isDropdownOpen"
+    (click)="closeDropdown()"
+  ></div>
+</div>
+
+<div class="auto-fill-grid">
+  <div class="info-box">
+    <span>Región:</span>
+    <strong>{{ selectedVehicle?.region || "-" }}</strong>
+  </div>
+  <div class="info-box">
+    <span>Agencia:</span>
+    <strong>{{ selectedVehicle?.agencia || "-" }}</strong>
+  </div>
+  <div class="info-box">
+    <span>ECO:</span>
+    <strong>{{ selectedVehicle?.eco || "-" }}</strong>
+  </div>
+  <div class="info-box">
+    <span>Matrícula:</span>
+    <strong>{{ selectedVehicle?.placa || "-" }}</strong>
+  </div>
+</div>
+
+<div class="divider-modal"></div>

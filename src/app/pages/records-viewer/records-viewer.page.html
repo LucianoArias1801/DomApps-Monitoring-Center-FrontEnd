@@ -1,0 +1,372 @@
+<app-header></app-header>
+
+<ion-content class="main-content">
+  <ion-grid class="full-height-grid ion-no-padding">
+    <ion-row class="full-height-row">
+      <ion-col size="12" size-lg="8" class="left-column">
+        <div class="actions-bar">
+          <ion-row class="bitacora-header-row">
+            <ion-col size="auto">
+              <h3 class="actions-bar-title">
+                Bitácora: {{ currentTemplateName | titlecase }}
+              </h3>
+            </ion-col>
+
+            <ion-col class="actions-buttons-col">
+              <div class="action-buttons-group">
+                <ion-button
+                  fill="outline"
+                  class="domapps-action-btn nuevo-evento-btn"
+                  (click)="openCreateModal()"
+                >
+                  <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                  Nuevo Registro
+                </ion-button>
+
+                <ion-button
+                  fill="outline"
+                  class="domapps-action-btn csv-btn"
+                  (click)="downloadCSV()"
+                >
+                  <ion-icon slot="start" name="download-outline"></ion-icon>
+                  Descargar CSV
+                </ion-button>
+
+                <ion-button
+                  fill="outline"
+                  class="domapps-action-btn"
+                  (click)="openFilters()"
+                >
+                  <ion-icon slot="start" name="funnel-outline"></ion-icon>
+                  Filtrar
+                </ion-button>
+              </div>
+            </ion-col>
+          </ion-row>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th *ngFor="let col of dynamicColumns">{{ col }}</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngIf="isLoading">
+                <td [attr.colspan]="dynamicColumns.length" class="loading-row">
+                  <ion-spinner name="crescent"></ion-spinner>
+                  <p>Consultando registros en la base de datos...</p>
+                </td>
+              </tr>
+
+              <ng-container *ngIf="!isLoading">
+                <tr *ngIf="dynamicRows.length === 0">
+                  <td
+                    [attr.colspan]="dynamicColumns.length"
+                    style="text-align: center; padding: 30px; color: #64748b"
+                  >
+                    No se encontraron registros en este formato.
+                  </td>
+                </tr>
+
+                <tr
+                  *ngFor="let row of dynamicRows"
+                  (click)="onSelectRecord(row)"
+                  [class.active-row]="selectedRecord?.recordId === row.recordId"
+                >
+                  <td *ngFor="let col of dynamicColumns">
+                    <span
+                      [ngClass]="{'badge-alerta': row[col] === 'ACCIONADO' || row[col] === 'EXCESO VELOCIDAD'}"
+                    >
+                      {{ row[col] || '-' }}
+                    </span>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </ion-col>
+
+      <ion-col size="12" size-lg="4" class="right-column">
+        <div class="detail-panel-card">
+          <ng-container *ngIf="selectedRecord; else emptyState">
+            <div class="evidence-image-placeholder">
+              <ion-icon name="image-outline"></ion-icon>
+            </div>
+
+            <div class="unit-title-row" style="align-items: flex-start">
+              <div class="title-wrapper">
+                <h2
+                  class="unit-title"
+                  style="margin-bottom: 4px; line-height: 1.2"
+                >
+                  {{ selectedRecord?.['MATRICULA'] ||
+                  selectedRecord?.['MATRÍCULA'] || 'SIN MATRÍCULA' }} - {{
+                  selectedRecord?.['ECO'] || 'SIN ECO' }}
+                </h2>
+                <span
+                  style="
+                    font-size: 13px;
+                    color: #64748b;
+                    font-weight: 500;
+                    display: block;
+                  "
+                >
+                  {{ selectedRecord?.['REGION'] || selectedRecord?.['REGIÓN'] ||
+                  'Sin Región' }} • {{ selectedRecord?.['AGENCIA'] || 'Sin
+                  Agencia' }}
+                </span>
+              </div>
+
+              <ion-button
+                fill="clear"
+                class="domapps-icon-btn edit-btn"
+                (click)="openEditModal()"
+                style="margin-top: -4px"
+              >
+                <ion-icon name="pencil-outline"></ion-icon>
+              </ion-button>
+            </div>
+
+            <div
+              class="event-status-center"
+              *ngIf="selectedRecord?.['TIPO DE ALERTA'] || selectedRecord?.['ESTADO DEL EVENTO'] || selectedRecord?.['ESTADO DEL REPORTE']"
+            >
+              <span
+                class="status-badge alert-type"
+                *ngIf="selectedRecord?.['TIPO DE ALERTA']"
+              >
+                {{ selectedRecord?.['TIPO DE ALERTA'] }}
+              </span>
+
+              <span
+                class="status-badge status-code"
+                *ngIf="selectedRecord?.['ESTADO DEL EVENTO']"
+              >
+                {{ selectedRecord?.['ESTADO DEL EVENTO'] }}
+              </span>
+
+              <span
+                class="status-badge"
+                style="
+                  background: #f1f5f9;
+                  color: #475569;
+                  border: 1px solid #cbd5e1;
+                "
+                *ngIf="selectedRecord?.['ESTADO DEL REPORTE']"
+              >
+                {{ selectedRecord?.['ESTADO DEL REPORTE'] }}
+              </span>
+            </div>
+
+            <div class="details-divider">
+              <span>Detalles del Reporte</span>
+            </div>
+
+            <div class="details-grid">
+              <ng-container *ngFor="let col of dynamicColumns">
+                <div
+                  class="detail-item"
+                  *ngIf="!col.toUpperCase().includes('CANTIDAD') && !col.toUpperCase().includes('ENLACE') && !col.toUpperCase().includes('EVIDENCIA')"
+                >
+                  <span class="label">{{ col }}:</span>
+
+                  <ng-container
+                    *ngIf="col.includes('KM/H') || col.includes('VELOCIDAD'); else textValue"
+                  >
+                    <span
+                      class="value"
+                      style="font-weight: 600; color: #0284c7"
+                    >
+                      {{ selectedRecord?.[col] || '0' }} KM/H
+                    </span>
+                  </ng-container>
+
+                  <ng-template #textValue>
+                    <span class="value"
+                      >{{ selectedRecord?.[col] || '-' }}</span
+                    >
+                  </ng-template>
+                </div>
+              </ng-container>
+
+              <div
+                class="detail-item quantity-control"
+                *ngIf="selectedRecord?.['CANTIDAD DE VECES'] || selectedRecord?.['CANTIDAD']"
+              >
+                <span class="label">CANTIDAD DE VECES:</span>
+                <div class="qty-actions">
+                  <span class="value"
+                    >{{ selectedRecord?.['CANTIDAD DE VECES'] ||
+                    selectedRecord?.['CANTIDAD'] }}</span
+                  >
+                  <ion-button
+                    fill="clear"
+                    class="add-qty-btn"
+                    (click)="increaseQuantity()"
+                  >
+                    <ion-icon name="add-circle-outline"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="extra-evidence"
+              style="margin-bottom: 24px"
+              *ngIf="selectedRecord?.['ENLACE'] || selectedRecord?.['ENLACE DE EVIDENCIA'] || selectedRecord?.['EVIDENCIA']"
+            >
+              <ion-button
+                fill="outline"
+                class="domapps-action-btn"
+                style="width: 100%"
+                [href]="selectedRecord?.['ENLACE'] || selectedRecord?.['ENLACE DE EVIDENCIA'] || selectedRecord?.['EVIDENCIA']"
+                target="_blank"
+              >
+                <ion-icon slot="start" name="link-outline"></ion-icon>
+                Abrir Evidencia Adjunta
+              </ion-button>
+            </div>
+
+            <div
+              class="comment-box"
+              *ngIf="selectedRecord?.comentario || selectedRecord?.comments"
+            >
+              <span class="label">Observaciones Generales</span>
+              <p class="comment-text">
+                {{ selectedRecord?.comentario || selectedRecord?.comments }}
+              </p>
+            </div>
+          </ng-container>
+
+          <ng-template #emptyState>
+            <div class="empty-state">
+              <div class="empty-icon-wrapper">
+                <ion-icon name="list-outline"></ion-icon>
+              </div>
+              <h3>Ningún elemento seleccionado</h3>
+              <p>
+                Haz clic en una fila de la bitácora para visualizar los detalles
+                técnicos y operativos aquí.
+              </p>
+            </div>
+          </ng-template>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-modal
+    #newEventModal
+    class="stacking-modal"
+    (ionModalWillPresent)="onModalOpen()"
+    (ionModalDidDismiss)="resetForm()"
+  >
+    <ng-template>
+      <div class="modal-wrapper">
+        <div class="modal-header">
+          <div>
+            <h2>
+              {{ isEditing ? 'Editar detalles del registro' : 'Ingresar detalles
+              del registro' }}
+            </h2>
+            <span class="modal-subtitle">
+              {{ isEditing ? 'Modifique los campos necesarios' : 'Complete la
+              información del formato dinámico' }}
+            </span>
+          </div>
+          <ion-button
+            fill="clear"
+            (click)="newEventModal.dismiss()"
+            class="close-btn"
+          >
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body" style="padding: 20px; background: #ffffff">
+          <ng-container [ngSwitch]="currentTemplateId">
+            <div *ngSwitchCase="2" class="alertas-layout">
+              <app-vehicle-selector
+                [templateId]="currentTemplateId"
+                [initialVehicle]="isEditing ? selectedRecord : null"
+                (vehicleSelected)="onVehicleSelected($event)"
+              >
+              </app-vehicle-selector>
+
+              <app-dynamic-form
+                #dynamicForm
+                [templateId]="2"
+                [hiddenFields]="['ECO', 'MATRICULA', 'MATRÍCULA', 'REGION', 'REGIÓN', 'AGENCIA', 'VEHICULO', 'VEHÍCULO', 'POSICION', 'POSICIÓN', 'COMENTARIOS', 'COMENTARIO', 'CANTIDAD']"
+                (formReadyToSubmit)="submitRecord($event)"
+              >
+              </app-dynamic-form>
+            </div>
+
+            <div *ngSwitchCase="1" class="churchill-layout">
+              <app-vehicle-selector
+                [templateId]="currentTemplateId"
+                [initialVehicle]="isEditing ? selectedRecord : null"
+                (vehicleSelected)="onVehicleSelected($event)"
+              >
+              </app-vehicle-selector>
+
+              <app-dynamic-form
+                #dynamicForm
+                [templateId]="1"
+                [hiddenFields]="['ECO', 'MATRICULA', 'MATRÍCULA', 'REGION', 'REGIÓN', 'AGENCIA', 'VEHICULO', 'VEHÍCULO', 'POSICION', 'POSICIÓN', 'COMENTARIOS', 'COMENTARIO EXTRA']"
+                (formReadyToSubmit)="submitRecord($event)"
+              >
+              </app-dynamic-form>
+            </div>
+
+            <div *ngSwitchDefault class="generic-layout">
+              <app-dynamic-form
+                #dynamicForm
+                [templateId]="currentTemplateId"
+                (formReadyToSubmit)="submitRecord($event)"
+              >
+              </app-dynamic-form>
+            </div>
+          </ng-container>
+        </div>
+
+        <div
+          class="modal-footer"
+          style="
+            padding: 15px 20px;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+            border-top: 1px solid #e2e8f0;
+          "
+        >
+          <ion-button
+            style="
+              --border-radius: 30px;
+              width: 100%;
+              max-width: 400px;
+              height: 48px;
+              font-weight: 600;
+              font-size: 15px;
+              margin: 0;
+            "
+            color="primary"
+            (click)="triggerFormSubmit()"
+            [disabled]="isLoading"
+          >
+            <ion-spinner
+              *ngIf="isLoading"
+              name="crescent"
+              slot="start"
+            ></ion-spinner>
+            {{ isEditing ? 'Guardar Cambios' : 'Registrar evento' }}
+          </ion-button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+</ion-content>

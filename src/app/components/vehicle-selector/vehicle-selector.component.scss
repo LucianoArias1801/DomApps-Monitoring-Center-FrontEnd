@@ -1,0 +1,122 @@
+.form-group {
+  margin-bottom: 16px;
+}
+.input-label {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+.custom-dropdown-wrapper {
+  position: relative;
+}
+.domapps-input-item {
+  --background: #ffffff;
+  --border-radius: 8px;
+  --border-color: #cbd5e1;
+  --border-width: 1px;
+  --border-style: solid;
+  --padding-start: 16px;
+  --min-height: 48px;
+  font-size: 14px;
+  color: #1e293b;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  cursor: pointer;
+
+  &.item-has-focus {
+    --border-color: #3880ff;
+    --border-width: 2px;
+  }
+}
+.placeholder-text {
+  color: #94a3b8;
+}
+.icon-rotated {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+.dropdown-menu-box {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #ffffff !important; /* 🚀 Fuerza fondo blanco en la caja principal */
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  z-index: 100;
+  overflow: hidden;
+
+  // 🚨 NUEVO: Forzamos a la lista interna de Ionic a ser blanca
+  ion-list {
+    background: #ffffff !important;
+    --background: #ffffff !important;
+  }
+
+  // 🚨 NUEVO: Forzamos a cada opción/fila a mantener fondo blanco y texto oscuro
+  ion-item {
+    --background: #ffffff !important;
+    --color: #0f172a !important; 
+    
+    ion-label {
+      color: #0f172a !important;
+    }
+  }
+}
+
+.search-header {
+  padding: 8px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc !important; /* 🚀 Fuerza fondo gris claro limpio en la cabecera */
+  
+  // Opcional: Asegura que el buscador no se vuelva negro interno
+  ion-searchbar {
+    --background: #ffffff !important;
+    --color: #0f172a !important;
+  }
+}
+.dropdown-list-scroll {
+  max-height: 220px;
+  overflow-y: auto;
+}
+.invisible-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+}
+.auto-fill-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+.info-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  span {
+    color: #64748b;
+    font-weight: 500;
+  }
+  strong {
+    color: #0f172a;
+    font-weight: 600;
+  }
+}
+.divider-modal {
+  height: 1px;
+  background-color: #e2e8f0;
+  margin: 24px 0;
+}

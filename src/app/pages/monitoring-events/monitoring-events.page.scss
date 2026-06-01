@@ -1081,3 +1081,15 @@ ion-modal.stacking-modal {
     flex: 1; // Toma todo el espacio sobrante
   }
 }
+
+/* Ocultar las flechas en WebKit (Chrome, Safari, Edge) */
+ion-input[type="number"]::part(native)::-webkit-inner-spin-button,
+ion-input[type="number"]::part(native)::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Ocultar las flechas en Firefox */
+ion-input[type="number"]::part(native) {
+  -moz-appearance: textfield;
+}

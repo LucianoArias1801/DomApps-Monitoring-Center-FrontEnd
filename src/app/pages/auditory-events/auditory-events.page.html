@@ -1,13 +1,1140 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>auditory-events</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-header></app-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">auditory-events</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="main-content">
+  <ion-grid class="full-height-grid ion-no-padding">
+    <ion-row class="full-height-row">
+      <ion-col size="12" size-lg="8" class="left-column">
+        <div class="actions-bar">
+          <ion-row
+            class="ion-align-items-center ion-justify-content-between full-width-row"
+          >
+            <ion-col size="auto">
+              <h3 class="actions-bar-title">
+                Bitácora de Auditorías en Cabina
+              </h3>
+            </ion-col>
+
+            <ion-col size="auto">
+              <div class="action-buttons-group">
+                <ion-button
+                  fill="outline"
+                  class="domapps-action-btn nuevo-evento-btn"
+                  (click)="newAuditModal.present()"
+                >
+                  <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                  Nueva Auditoría
+                </ion-button>
+
+                <ion-button
+                  fill="outline"
+                  class="domapps-action-btn csv-btn"
+                  (click)="downloadCSV()"
+                >
+                  <ion-icon slot="start" name="download-outline"></ion-icon>
+                  Descargar CSV
+                </ion-button>
+
+                <ion-button
+                  fill="outline"
+                  class="domapps-action-btn"
+                  (click)="openFilters()"
+                >
+                  <ion-icon slot="start" name="funnel-outline"></ion-icon>
+                  Filtrar
+                </ion-button>
+              </div>
+            </ion-col>
+          </ion-row>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Unidad</th>
+                <th>ECO</th>
+                <th>Agencia</th>
+                <th>Objetos de Valor</th>
+                <th>Vidrios Abajo</th>
+                <th>Interacción</th>
+                <th>Espera</th>
+                <th>Fecha y Hora</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngIf="isLoading">
+                <td colspan="8" class="loading-row">
+                  <ion-spinner name="crescent"></ion-spinner>
+                  <p>Cargando auditorías...</p>
+                </td>
+              </tr>
+
+              <ng-container *ngIf="!isLoading">
+                <tr
+                  *ngFor="let audit of auditsList"
+                  (click)="onSelectAudit(audit)"
+                  [class.active-row]="selectedAudit?.id === audit.id"
+                >
+                  <td><span class="fw-500">{{ audit.unidad }}</span></td>
+                  <td>{{ audit.eco }}</td>
+                  <td class="unidad-col" title="{{ audit.agencia }}">
+                    {{ audit.agencia }}
+                  </td>
+                  <td>
+                    <span
+                      class="badge-alerta"
+                      *ngIf="audit.objetosValor !== 'NO'"
+                      >{{ audit.objetosValor }}</span
+                    >
+                    <span *ngIf="audit.objetosValor === 'NO'"
+                      >{{ audit.objetosValor }}</span
+                    >
+                  </td>
+                  <td>{{ audit.vidriosAbajo }}</td>
+                  <td>{{ audit.interaccionOperador }}</td>
+                  <td>{{ audit.tiempoEspera }}</td>
+                  <td class="fecha-col">
+                    {{ audit.fechaAuditoria }} <br />
+                    {{ audit.horaAuditoria }}
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </ion-col>
+
+      <ion-col size="12" size-lg="4" class="right-column">
+        <div class="detail-panel-card">
+          <ng-container *ngIf="selectedAudit; else emptyState">
+            <div class="evidence-image-placeholder">
+              <ion-icon name="image-outline"></ion-icon>
+            </div>
+
+            <div class="unit-title-row">
+              <h2 class="unit-title">
+                {{ selectedAudit.unidad }} - ECO: {{ selectedAudit.eco }} - {{
+                selectedAudit.agencia }}
+              </h2>
+              <ion-button
+                fill="clear"
+                class="domapps-icon-btn edit-btn"
+                (click)="openEditModal()"
+              >
+                <ion-icon name="pencil-outline"></ion-icon>
+              </ion-button>
+            </div>
+
+            <div class="event-status-center">
+              <span class="status-badge alert-type"
+                >Auditoría de Seguridad</span
+              >
+              <span class="status-badge status-code"
+                >{{ selectedAudit.fechaAuditoria }}</span
+              >
+            </div>
+
+            <div class="details-divider">
+              <span>Hallazgos de Inspección</span>
+            </div>
+
+            <div class="details-grid">
+              <div class="detail-item full-width">
+                <span class="label">Objetos de Valor Dentro:</span>
+                <span class="value">{{ selectedAudit.objetosValor }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Vidrios Abajo:</span>
+                <span class="value">{{ selectedAudit.vidriosAbajo }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Interacción Operador:</span>
+                <span class="value"
+                  >{{ selectedAudit.interaccionOperador }}</span
+                >
+              </div>
+              <div class="detail-item">
+                <span class="label">Tiempo de Espera:</span>
+                <span class="value">{{ selectedAudit.tiempoEspera }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Fecha Auditoría:</span>
+                <span class="value">{{ selectedAudit.fechaAuditoria }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Hora Auditoría:</span>
+                <span class="value">{{ selectedAudit.horaAuditoria }}</span>
+              </div>
+            </div>
+
+            <div class="extra-evidence">
+              <ion-button fill="outline" class="domapps-action-btn w-100">
+                Evidencia Fotográfica
+              </ion-button>
+            </div>
+
+            <div class="comment-box">
+              <span class="label">Comentario del Auditor</span>
+              <p class="comment-text">
+                {{ selectedAudit.comentario || 'Sin comentarios adicionales.' }}
+              </p>
+            </div>
+          </ng-container>
+
+          <ng-template #emptyState>
+            <div class="empty-state">
+              <div class="empty-icon-wrapper">
+                <ion-icon name="clipboard-outline"></ion-icon>
+              </div>
+              <h3>Ninguna auditoría seleccionada</h3>
+              <p>
+                Haz clic en una fila de la bitácora para visualizar los
+                hallazgos de seguridad en cabina aquí.
+              </p>
+            </div>
+          </ng-template>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-modal
+    #newAuditModal
+    class="stacking-modal"
+    (ionModalDidDismiss)="resetForm()"
+  >
+    <ng-template>
+      <div class="modal-wrapper">
+        <div class="modal-header">
+          <div>
+            <h2>Ingresar detalles de auditoría</h2>
+            <span class="modal-subtitle"
+              >Complete la información de inspección en cabina</span
+            >
+          </div>
+          <ion-button
+            fill="clear"
+            (click)="newAuditModal.dismiss()"
+            class="close-btn"
+          >
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group custom-dropdown-wrapper">
+            <label class="input-label">Buscar unidad</label>
+
+            <ion-item
+              button
+              lines="none"
+              class="domapps-input-item"
+              (click)="isEcoDropdownOpen = !isEcoDropdownOpen"
+            >
+              <ion-label [class.placeholder-text]="!newAuditForm.eco">
+                <ng-container *ngIf="newAuditForm.eco">
+                  {{ newAuditForm.unidad }} - {{ newAuditForm.eco }} {{
+                  newAuditForm.agencia }}
+                </ng-container>
+
+                <ng-container *ngIf="!newAuditForm.eco">
+                  Buscar y seleccionar unidad...
+                </ng-container>
+              </ion-label>
+              <ion-icon
+                name="chevron-down-outline"
+                slot="end"
+                color="medium"
+                [class.icon-rotated]="isEcoDropdownOpen"
+              ></ion-icon>
+            </ion-item>
+
+            <div class="dropdown-menu-box" *ngIf="isEcoDropdownOpen">
+              <div class="search-header">
+                <ion-searchbar
+                  placeholder="Buscar por ECO, unidad o agencia..."
+                  [(ngModel)]="ecoSearchQuery"
+                  (ionInput)="filterEcos()"
+                  class="domapps-searchbar"
+                  mode="md"
+                >
+                </ion-searchbar>
+              </div>
+
+              <div class="dropdown-list-scroll">
+                <ion-list lines="none">
+                  <ion-item
+                    button
+                    *ngFor="let u of filteredEcos"
+                    (click)="selectEco(u)"
+                  >
+                    <ion-label
+                      >{{ u.unidad }} - {{ u.eco }} {{ u.agencia }}</ion-label
+                    >
+                  </ion-item>
+
+                  <ion-item *ngIf="filteredEcos.length === 0">
+                    <ion-label color="medium" class="ion-text-center"
+                      >Sin resultados</ion-label
+                    >
+                  </ion-item>
+                </ion-list>
+              </div>
+            </div>
+
+            <div
+              class="invisible-backdrop"
+              *ngIf="isEcoDropdownOpen"
+              (click)="isEcoDropdownOpen = false"
+            ></div>
+          </div>
+
+          <div class="auto-fill-grid">
+            <div class="info-box">
+              <span>Unidad:</span>
+              <strong>{{ newAuditForm.unidad || '-' }}</strong>
+            </div>
+
+            <div class="info-box">
+              <span>ECO:</span>
+              <strong>{{ newAuditForm.eco || '-' }}</strong>
+            </div>
+
+            <div class="info-box full-width">
+              <span>Agencia:</span>
+              <strong>{{ newAuditForm.agencia || '-' }}</strong>
+            </div>
+          </div>
+
+          <div class="divider-modal"></div>
+
+          <div class="form-grid">
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Objetos de Valor Dentro</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isObjetosDropdownOpen = !isObjetosDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!newAuditForm.objetosValor"
+                >
+                  {{ newAuditForm.objetosValor || 'Seleccione' }}
+                </ion-label>
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isObjetosDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+
+              <div class="dropdown-menu-box" *ngIf="isObjetosDropdownOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let o of objetosMock"
+                      (click)="selectObjetos(o)"
+                    >
+                      <ion-label>{{ o }}</ion-label>
+                    </ion-item>
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isObjetosDropdownOpen"
+                (click)="isObjetosDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Vidrios Abajo</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isVidriosDropdownOpen = !isVidriosDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!newAuditForm.vidriosAbajo"
+                >
+                  {{ newAuditForm.vidriosAbajo || 'Seleccione' }}
+                </ion-label>
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isVidriosDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+
+              <div class="dropdown-menu-box" *ngIf="isVidriosDropdownOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let v of vidriosMock"
+                      (click)="selectVidrios(v)"
+                    >
+                      <ion-label>{{ v }}</ion-label>
+                    </ion-item>
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isVidriosDropdownOpen"
+                (click)="isVidriosDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Interacción con Operador</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isInteraccionDropdownOpen = !isInteraccionDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!newAuditForm.interaccionOperador"
+                >
+                  {{ newAuditForm.interaccionOperador || 'Seleccione' }}
+                </ion-label>
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isInteraccionDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+
+              <div class="dropdown-menu-box" *ngIf="isInteraccionDropdownOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let i of interaccionMock"
+                      (click)="selectInteraccion(i)"
+                    >
+                      <ion-label>{{ i }}</ion-label>
+                    </ion-item>
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isInteraccionDropdownOpen"
+                (click)="isInteraccionDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Tiempo de Espera</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isTiempoDropdownOpen = !isTiempoDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!newAuditForm.tiempoEspera"
+                >
+                  {{ newAuditForm.tiempoEspera || 'Seleccione' }}
+                </ion-label>
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isTiempoDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+
+              <div class="dropdown-menu-box" *ngIf="isTiempoDropdownOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let t of tiempoMock"
+                      (click)="selectTiempo(t)"
+                    >
+                      <ion-label>{{ t }}</ion-label>
+                    </ion-item>
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isTiempoDropdownOpen"
+                (click)="isTiempoDropdownOpen = false"
+              ></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Fecha y Hora de la Auditoría</label>
+            <div class="domapps-input-item native-input-wrapper">
+              <input
+                type="text"
+                class="custom-native-input"
+                placeholder="dd/mm/aaaa hh:mm AM o PM (CST)"
+                [(ngModel)]="newAuditForm.fechaHoraAuditoria"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Evidencia Fotográfica</label>
+
+            <input
+              type="file"
+              #fileInput
+              accept="image/*,video/*"
+              style="display: none"
+              (change)="onFileSelected($event)"
+            />
+
+            <ion-button
+              *ngIf="!selectedEvidence"
+              fill="outline"
+              class="evidence-btn"
+              mode="md"
+              (click)="fileInput.click()"
+            >
+              <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
+              Seleccionar Evidencia
+            </ion-button>
+
+            <div class="selected-evidence-card" *ngIf="selectedEvidence">
+              <div class="evidence-info">
+                <ion-icon
+                  [name]="evidenceIcon"
+                  class="evidence-icon"
+                ></ion-icon>
+                <div class="evidence-details">
+                  <span class="file-name">{{ selectedEvidence.name }}</span>
+                  <span class="file-size"
+                    >{{ formatBytes(selectedEvidence.size) }}</span
+                  >
+                </div>
+              </div>
+              <ion-button
+                fill="clear"
+                class="remove-file-btn"
+                (click)="removeEvidence()"
+              >
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Comentarios / Observaciones</label>
+            <ion-textarea
+              placeholder="Describa el objeto de valor o interacción..."
+              [(ngModel)]="newAuditForm.comentario"
+              class="domapps-textarea"
+              rows="3"
+            >
+            </ion-textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <ion-button
+            class="submit-btn"
+            (click)="submitAudit()"
+            [disabled]="isLoading"
+          >
+            <ion-spinner
+              *ngIf="isLoading"
+              name="crescent"
+              slot="start"
+            ></ion-spinner>
+            Subir auditoría a plataforma
+          </ion-button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal
+    #filterModal
+    class="stacking-modal"
+    (ionModalDidDismiss)="closeFilterDropdowns()"
+  >
+    <ng-template>
+      <div class="modal-wrapper">
+        <div class="modal-header">
+          <div>
+            <h2>Filtrar Auditorías</h2>
+            <span class="modal-subtitle"
+              >Refina las auditorías mostradas en pantalla</span
+            >
+          </div>
+          <ion-button
+            fill="clear"
+            (click)="filterModal.dismiss()"
+            class="close-btn"
+          >
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Fecha Inicio</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isStartDateModalOpen = true"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.fechaInicio">
+                  {{ formatDateForUI(filterForm.fechaInicio) || 'Seleccionar...'
+                  }}
+                </ion-label>
+                <ion-icon
+                  name="calendar-outline"
+                  slot="end"
+                  color="medium"
+                ></ion-icon>
+              </ion-item>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Fecha Fin</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEndDateModalOpen = true"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.fechaFin">
+                  {{ formatDateForUI(filterForm.fechaFin) || 'Seleccionar...' }}
+                </ion-label>
+                <ion-icon
+                  name="calendar-outline"
+                  slot="end"
+                  color="medium"
+                ></ion-icon>
+              </ion-item>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Buscar Unidad</label>
+            <div class="domapps-input-item">
+              <input
+                type="text"
+                class="custom-native-input"
+                placeholder="Unidad, ECO o Agencia..."
+                [(ngModel)]="filterForm.unidadBusqueda"
+              />
+            </div>
+          </div>
+
+          <div class="divider-modal"></div>
+
+          <div class="form-grid">
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Agencia</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isFilterAgenciaOpen = !isFilterAgenciaOpen"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.agencia"
+                  >{{ filterForm.agencia || 'Todas' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isFilterAgenciaOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isFilterAgenciaOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      (click)="filterForm.agencia = ''; isFilterAgenciaOpen = false"
+                      ><ion-label>Todas</ion-label></ion-item
+                    >
+                    <ion-item
+                      button
+                      *ngFor="let a of agenciasMock"
+                      (click)="filterForm.agencia = a; isFilterAgenciaOpen = false"
+                      ><ion-label>{{ a }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isFilterAgenciaOpen"
+                (click)="isFilterAgenciaOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Objetos de Valor</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isFilterObjetosOpen = !isFilterObjetosOpen"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.objetosValor"
+                  >{{ filterForm.objetosValor || 'Todos' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isFilterObjetosOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isFilterObjetosOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      (click)="filterForm.objetosValor = ''; isFilterObjetosOpen = false"
+                      ><ion-label>Todos</ion-label></ion-item
+                    >
+                    <ion-item
+                      button
+                      *ngFor="let o of objetosMock"
+                      (click)="filterForm.objetosValor = o; isFilterObjetosOpen = false"
+                      ><ion-label>{{ o }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isFilterObjetosOpen"
+                (click)="isFilterObjetosOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Vidrios Abajo</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isFilterVidriosOpen = !isFilterVidriosOpen"
+              >
+                <ion-label [class.placeholder-text]="!filterForm.vidriosAbajo"
+                  >{{ filterForm.vidriosAbajo || 'Todos' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isFilterVidriosOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isFilterVidriosOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      (click)="filterForm.vidriosAbajo = ''; isFilterVidriosOpen = false"
+                      ><ion-label>Todos</ion-label></ion-item
+                    >
+                    <ion-item
+                      button
+                      *ngFor="let v of vidriosMock"
+                      (click)="filterForm.vidriosAbajo = v; isFilterVidriosOpen = false"
+                      ><ion-label>{{ v }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isFilterVidriosOpen"
+                (click)="isFilterVidriosOpen = false"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer footer-dual">
+          <ion-button fill="clear" class="clear-btn" (click)="clearFilters()"
+            >Limpiar</ion-button
+          >
+          <ion-button
+            class="submit-btn"
+            (click)="applyFilters()"
+            [disabled]="isLoading"
+          >
+            <ion-spinner
+              *ngIf="isLoading"
+              name="crescent"
+              slot="start"
+            ></ion-spinner>
+            Aplicar Filtros
+          </ion-button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal
+    [isOpen]="isStartDateModalOpen"
+    (didDismiss)="isStartDateModalOpen = false"
+    [keepContentsMounted]="true"
+    class="custom-datetime-modal"
+  >
+    <ng-template>
+      <div class="datetime-container-wrapper">
+        <ion-datetime
+          class="universal-date-picker"
+          presentation="date"
+          [value]="filterForm.fechaInicio"
+          [max]="maxFechaInicio"
+          (ionChange)="onStartDateChanged($event)"
+          doneText="Aplicar"
+          cancelText="Cerrar"
+          showDefaultButtons="true"
+          color="primary"
+        >
+        </ion-datetime>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal
+    [isOpen]="isEndDateModalOpen"
+    (didDismiss)="isEndDateModalOpen = false"
+    [keepContentsMounted]="true"
+    class="custom-datetime-modal"
+  >
+    <ng-template>
+      <div class="datetime-container-wrapper">
+        <ion-datetime
+          class="universal-date-picker"
+          presentation="date"
+          [value]="filterForm.fechaFin"
+          [min]="minFechaFin"
+          [max]="maxFechaFin"
+          (ionChange)="onEndDateChanged($event)"
+          doneText="Aplicar"
+          cancelText="Cerrar"
+          showDefaultButtons="true"
+          color="primary"
+        >
+        </ion-datetime>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal
+    #editAuditModal
+    class="stacking-modal"
+    (ionModalDidDismiss)="resetEditForm()"
+  >
+    <ng-template>
+      <div class="modal-wrapper">
+        <div class="modal-header">
+          <div>
+            <h2>Modificar detalles de la auditoría</h2>
+            <span class="modal-subtitle"
+              >Actualice la información de la inspección</span
+            >
+          </div>
+          <ion-button
+            fill="clear"
+            (click)="editAuditModal.dismiss()"
+            class="close-btn"
+          >
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group custom-dropdown-wrapper">
+            <label class="input-label">Buscar unidad</label>
+            <ion-item
+              button
+              lines="none"
+              class="domapps-input-item"
+              (click)="isEditEcoDropdownOpen = !isEditEcoDropdownOpen"
+            >
+              <ion-label [class.placeholder-text]="!editAuditForm.eco">
+                <ng-container *ngIf="editAuditForm.eco">
+                  {{ editAuditForm.unidad }} - {{ editAuditForm.eco }} {{
+                  editAuditForm.agencia }}
+                </ng-container>
+                <ng-container *ngIf="!editAuditForm.eco"
+                  >Buscar y cambiar unidad...</ng-container
+                >
+              </ion-label>
+              <ion-icon
+                name="chevron-down-outline"
+                slot="end"
+                color="medium"
+                [class.icon-rotated]="isEditEcoDropdownOpen"
+              ></ion-icon>
+            </ion-item>
+
+            <div class="dropdown-menu-box" *ngIf="isEditEcoDropdownOpen">
+              <div class="search-header">
+                <ion-searchbar
+                  placeholder="Buscar por ECO o Unidad..."
+                  [(ngModel)]="ecoSearchQuery"
+                  (ionInput)="filterEcos()"
+                  class="domapps-searchbar"
+                  mode="md"
+                ></ion-searchbar>
+              </div>
+              <div class="dropdown-list-scroll">
+                <ion-list lines="none">
+                  <ion-item
+                    button
+                    *ngFor="let u of filteredEcos"
+                    (click)="selectEditEco(u)"
+                  >
+                    <ion-label
+                      >{{ u.unidad }} - {{ u.eco }} {{ u.agencia }}</ion-label
+                    >
+                  </ion-item>
+                  <ion-item *ngIf="filteredEcos.length === 0"
+                    ><ion-label color="medium" class="ion-text-center"
+                      >Sin resultados</ion-label
+                    ></ion-item
+                  >
+                </ion-list>
+              </div>
+            </div>
+            <div
+              class="invisible-backdrop"
+              *ngIf="isEditEcoDropdownOpen"
+              (click)="isEditEcoDropdownOpen = false"
+            ></div>
+          </div>
+
+          <div class="auto-fill-grid">
+            <div class="info-box">
+              <span>Unidad:</span
+              ><strong>{{ editAuditForm.unidad || '-' }}</strong>
+            </div>
+            <div class="info-box">
+              <span>ECO:</span><strong>{{ editAuditForm.eco || '-' }}</strong>
+            </div>
+            <div class="info-box full-width">
+              <span>Agencia:</span
+              ><strong>{{ editAuditForm.agencia || '-' }}</strong>
+            </div>
+          </div>
+
+          <div class="divider-modal"></div>
+
+          <div class="form-grid">
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Objetos de Valor Dentro</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEditObjetosDropdownOpen = !isEditObjetosDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!editAuditForm.objetosValor"
+                  >{{ editAuditForm.objetosValor || 'Seleccione' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isEditObjetosDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isEditObjetosDropdownOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let o of objetosMock"
+                      (click)="editAuditForm.objetosValor = o; isEditObjetosDropdownOpen = false"
+                      ><ion-label>{{ o }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isEditObjetosDropdownOpen"
+                (click)="isEditObjetosDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Vidrios Abajo</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEditVidriosDropdownOpen = !isEditVidriosDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!editAuditForm.vidriosAbajo"
+                  >{{ editAuditForm.vidriosAbajo || 'Seleccione' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isEditVidriosDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isEditVidriosDropdownOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let v of vidriosMock"
+                      (click)="editAuditForm.vidriosAbajo = v; isEditVidriosDropdownOpen = false"
+                      ><ion-label>{{ v }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isEditVidriosDropdownOpen"
+                (click)="isEditVidriosDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Interacción con Operador</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEditInteraccionDropdownOpen = !isEditInteraccionDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!editAuditForm.interaccionOperador"
+                  >{{ editAuditForm.interaccionOperador || 'Seleccione'
+                  }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isEditInteraccionDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+              <div
+                class="dropdown-menu-box"
+                *ngIf="isEditInteraccionDropdownOpen"
+              >
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let i of interaccionMock"
+                      (click)="editAuditForm.interaccionOperador = i; isEditInteraccionDropdownOpen = false"
+                      ><ion-label>{{ i }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isEditInteraccionDropdownOpen"
+                (click)="isEditInteraccionDropdownOpen = false"
+              ></div>
+            </div>
+
+            <div class="form-group custom-dropdown-wrapper">
+              <label class="input-label">Tiempo de Espera</label>
+              <ion-item
+                button
+                lines="none"
+                class="domapps-input-item"
+                (click)="isEditTiempoDropdownOpen = !isEditTiempoDropdownOpen"
+              >
+                <ion-label
+                  [class.placeholder-text]="!editAuditForm.tiempoEspera"
+                  >{{ editAuditForm.tiempoEspera || 'Seleccione' }}</ion-label
+                >
+                <ion-icon
+                  name="chevron-down-outline"
+                  slot="end"
+                  color="medium"
+                  [class.icon-rotated]="isEditTiempoDropdownOpen"
+                ></ion-icon>
+              </ion-item>
+              <div class="dropdown-menu-box" *ngIf="isEditTiempoDropdownOpen">
+                <div class="dropdown-list-scroll">
+                  <ion-list lines="none">
+                    <ion-item
+                      button
+                      *ngFor="let t of tiempoMock"
+                      (click)="editAuditForm.tiempoEspera = t; isEditTiempoDropdownOpen = false"
+                      ><ion-label>{{ t }}</ion-label></ion-item
+                    >
+                  </ion-list>
+                </div>
+              </div>
+              <div
+                class="invisible-backdrop"
+                *ngIf="isEditTiempoDropdownOpen"
+                (click)="isEditTiempoDropdownOpen = false"
+              ></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Fecha y Hora de la Auditoría</label>
+            <div class="domapps-input-item native-input-wrapper">
+              <input
+                type="text"
+                class="custom-native-input"
+                [(ngModel)]="editAuditForm.fechaHoraAuditoria"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Comentarios / Observaciones</label>
+            <ion-textarea
+              [(ngModel)]="editAuditForm.comentario"
+              class="domapps-textarea"
+              rows="3"
+            ></ion-textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <ion-button
+            class="submit-btn"
+            (click)="updateAudit()"
+            [disabled]="isLoading"
+          >
+            <ion-spinner
+              *ngIf="isLoading"
+              name="crescent"
+              slot="start"
+            ></ion-spinner>
+            Guardar Cambios
+          </ion-button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
 </ion-content>

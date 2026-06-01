@@ -17,7 +17,7 @@
         </div>
       </header>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
+      <form [formGroup]="loginForm" class="login-form">
         <div class="input-group">
           <label class="field-label">Correo electrónico</label>
           <ion-item lines="none" class="custom-input-item">
@@ -44,7 +44,8 @@
 
         <ion-button
           expand="block"
-          type="submit"
+          type="button"
+          (click)="onLogin()"
           class="login-btn"
           [disabled]="loginForm.invalid"
         >

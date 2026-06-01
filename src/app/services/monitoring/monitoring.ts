@@ -1,58 +1,119 @@
-// ? ==========================================================================
-// ? 1. SERVICIO DE INTEGRACIÓN (MOCK) - EVENTOS DE MONITOREO
-// ? ==========================================================================
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-
-//* Contrato estricto basado en tu Excel y Wireframe
-export interface FleetEvent {
-  id: string;
-  proveedor: string;
-  conceptoUnidad: string;
-  statusMix: string;
-  tipoAlerta: string;
-  status: string;
-  fecha: string;
-  plataforma: string;
-  region: string;
-  agencia: string;
-  eco: string;
-  matricula: string;
-  posicion: string;
-  cantidad: number;
-  comentario: string;
-}
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Auth } from '../auth/auth'; // Asegúrate de que la ruta apunte a tu servicio Auth
 
 @Injectable({
   providedIn: 'root'
 })
 export class MonitoringService {
 
-  constructor() { }
+  private baseUrl = 'http://localhost:3000/api';
+  private templateId = 2; // El ID para Monitoreo según tu documentación [cite: 35, 38, 47, 84]
 
-  // ? ==========================================================================
-  // ? 2. ENDPOINTS SIMULADOS
-  // ? ==========================================================================
+  constructor(
+    private http: HttpClient,
+    private auth: Auth
+  ) { }
 
-  //* Obtiene la bitácora inicial de eventos
-  getLiveEvents(): Observable<FleetEvent[]> {
-    const mockData: FleetEvent[] = [
-      {
-        id: 'EV-1001', proveedor: 'Traffilog', conceptoUnidad: 'VD95893- 3332 Norte Hermosillo ISUZU ELF 400',
-        statusMix: 'ACCIONADO', tipoAlerta: 'CIERRE DE OJOS', status: 'WH', fecha: '01/05/2026 01:25 PM',
-        plataforma: 'Traffilog', region: 'Norte', agencia: 'Hermosillo', eco: '3332',
-        matricula: 'VD95893', posicion: 'Lat: 29.08, Lng: -110.95', cantidad: 1, comentario: 'Operador presenta fatiga'
-      },
-      {
-        id: 'EV-1002', proveedor: 'PF', conceptoUnidad: 'JW49604- 3807 Centro Guadalajara VOLKSWAGEN SAVEIRO',
-        statusMix: 'ACCIONADO', tipoAlerta: 'CINTURON', status: 'AF', fecha: '01/05/2026 02:39 PM',
-        plataforma: 'PF', region: 'Centro', agencia: 'Guadalajara', eco: '3807',
-        matricula: 'JW49604', posicion: 'Lat: 20.65, Lng: -103.34', cantidad: 3, comentario: 'Operador detenido sin cinturón'
-      }
-    ];
-
-    // 3. Simulamos 800ms de tiempo de respuesta de red
-    return of(mockData).pipe(delay(800));
+  /**
+   * Genera los cabeceros con el token JWT activo
+   */
+  private getHeaders(): HttpHeaders {
+    const token = this.auth.getToken();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
   }
+
+  /**
+   * Petición GET al endpoint de registros
+   * Trae el historial de la bitácora de monitoreo
+   */
+  public getMonitoringRecords(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/forms/${this.templateId}/records`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  public getUnitsCatalog(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/units`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  /**
+   * Buscador dinámico de vehículos (Apunta al nuevo endpoint optimizado)
+   */
+  public searchVehicles(term: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/vehicles/select-options?q=${term}`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  /**
+   * Obtiene la estructura y opciones de los selectores de un formulario
+   */
+  public getFormStructure(templateId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/forms/${templateId}/structure`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  /**
+   * Envía el payload completo para guardar un nuevo registro en la base de datos
+   * Apunta al endpoint POST /forms/submit
+   */
+  public submitForm(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/forms/submit`, payload, {
+      headers: this.getHeaders() // Asegúrate de enviar el token de autorización
+    });
+  }
+
+  /**
+   * Obtiene los registros llenos de un formulario específico
+   */
+  public getFormRecords(templateId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/forms/${templateId}/records`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  // Arriba en el archivo debes tener importado HttpHeaders:
+  // import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+  public incrementEventQuantity(templateID: number, recordId: number | string) {
+    const url = `${this.baseUrl}/forms/${templateID}/records/${recordId}/increment`;
+    
+    // Usamos tu servicio de Auth para traer el token
+    const token = this.auth.getToken(); // O como se llame la función en tu proyecto
+    
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.patch(url, {}, { headers });
+  }
+
+  /**
+   * Actualiza un registro completo en la base de datos
+   * @param templateID ID del formulario (Ej: 2 para Alertas)
+   * @param recordId ID del registro a modificar
+   * @param payload Objeto con las respuestas { answers: [...] }
+   */
+  public updateFormRecord(templateID: number, recordId: number | string, payload: any) {
+    const url = `${this.baseUrl}/forms/${templateID}/records/${recordId}`;
+    
+    // Extraemos el token para el guardia de seguridad
+    const token = this.auth.getToken(); 
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    // Enviamos un PUT con el payload y los headers
+    return this.http.put(url, payload, { headers });
+  }
+
+  
 }
