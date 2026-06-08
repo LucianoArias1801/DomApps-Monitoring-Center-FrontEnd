@@ -58,6 +58,8 @@ export class RecordsViewerPage implements OnInit {
 
   public activeFilters: any = {}; // Guarda los filtros aplicados
 
+  public isLoadingMore: boolean = false; // Controla el spinner inferior de la tabla
+
   constructor(
     private route: ActivatedRoute,
     private dynamicFormsService: DynamicFormsService,
@@ -132,6 +134,12 @@ export class RecordsViewerPage implements OnInit {
    */
   public loadEvents(preserveId?: number) {
     this.isLoading = true;
+
+    // 🚀 NUEVO: Reactivar el Scroll Infinito en el DOM cada vez que cargamos la tabla desde cero
+    const infiniteScroll = document.querySelector('ion-infinite-scroll');
+    if (infiniteScroll) {
+      infiniteScroll.disabled = false;
+    }
     
     this.dynamicFormsService.getFormRecords(this.currentTemplateId, this.activeFilters).subscribe({
       next: (records: any[]) => {
@@ -142,17 +150,15 @@ export class RecordsViewerPage implements OnInit {
           
           if (record.answers) {
             Object.keys(record.answers).forEach(key => {
-              // 1. Sanitización estricta: quitamos los "Enters" (\r\n)
               const cleanKey = key.replace(/[\r\n]+/g, '').trim();
-              // 2. Guardamos el valor solo una vez
               cleanAnswers[cleanKey] = record.answers[key]; 
             });
           }
 
-          // 3. Retornamos el objeto plano sin duplicados
+          // 🚀 CORRECCIÓN UTC: Reemplazamos el espacio por 'T' y agregamos la 'Z' al final
           return {
             recordId: record.recordId,
-            fechaRegistro: record.recordDatetime,
+            fechaRegistro: record.recordDatetime ? record.recordDatetime.replace(' ', 'T') + 'Z' : null,
             comentario: record.comments,
             ...cleanAnswers 
           };
@@ -169,6 +175,17 @@ export class RecordsViewerPage implements OnInit {
         }
 
         this.isLoading = false;
+
+        setTimeout(() => {
+          const container = document.querySelector('.table-container');
+          // Comprobamos si el contenido de la tabla es más pequeño que el contenedor gris
+          if (container && container.scrollHeight <= container.clientHeight) {
+             // Como no hay scrollbar visible, obligamos a cargar la siguiente página
+             if (this.dynamicRows.length > 0) {
+               this.loadMoreEventsNative();
+             }
+          }
+        }, 150);
       },
       error: (err: any) => {
         console.error('❌ Error al cargar los registros:', err);
@@ -602,5 +619,74 @@ private getMexicoCSTDateTimeString(): string {
     setTimeout(() => clearInterval(checkExist), 4000);
   }
 
+  // ==========================================================================
+  // LÓGICA DE PAGINACIÓN POR SCROLL INTERNO NATIVO
+  // ==========================================================================
   
+  /**
+   * Escucha el movimiento del contenedor de la tabla y calcula si llegó al fondo
+   */
+  public onTableScroll(event: any) {
+    const element = event.target;
+    
+    // Margen de tolerancia de 5px para absorber diferencias de zoom en navegadores
+    const threshold = 5; 
+    const isAtBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + threshold;
+
+    // Si llegó al fondo del div, no está cargando nada actualmente y ya hay datos en pantalla
+    if (isAtBottom && !this.isLoadingMore && !this.isLoading && this.dynamicRows.length > 0) {
+      this.loadMoreEventsNative();
+    }
+  }
+
+  /**
+   * Realiza la petición al backend solicitando el lote de los siguientes 20 registros
+   */
+  private loadMoreEventsNative() {
+    this.isLoadingMore = true;
+
+    // Localizamos el ID más antiguo (el último de la lista actual)
+    const oldestRecordId = this.dynamicRows[this.dynamicRows.length - 1].recordId;
+
+    // Fusionamos los filtros de tu modal con la ID del cursor de paginación
+    const paginationFilters = { 
+      ...this.activeFilters, 
+      lastId: oldestRecordId 
+    };
+
+    this.dynamicFormsService.getFormRecords(this.currentTemplateId, paginationFilters).subscribe({
+      next: (newRecords: any[]) => {
+        if (newRecords.length === 0) {
+          this.presentToast('Has llegado al final del historial.', 'warning');
+        } else {
+          // Mapeamos y sanitizamos el nuevo lote de respuestas de la BD
+          const formattedNewRecords = newRecords.map(record => {
+            const cleanAnswers: any = {};
+            if (record.answers) {
+              Object.keys(record.answers).forEach(key => {
+                const cleanKey = key.replace(/[\r\n]+/g, '').trim();
+                cleanAnswers[cleanKey] = record.answers[key]; 
+              });
+            }
+            return {
+              recordId: record.recordId,
+              // 🚀 CORRECCIÓN UTC: Forzamos la zona horaria universal
+              fechaRegistro: record.recordDatetime ? record.recordDatetime.replace(' ', 'T') + 'Z' : null,
+              comentario: record.comments,
+              ...cleanAnswers 
+            };
+          });
+
+          // Concatenamos el nuevo lote abajo de tus registros actuales sin parpadear
+          this.dynamicRows = [...this.dynamicRows, ...formattedNewRecords];
+        }
+        this.isLoadingMore = false; // Apagamos el indicador
+      },
+      error: (err: any) => {
+        console.error('❌ Error al paginar registros:', err);
+        this.presentToast('Error de red al intentar cargar más filas.', 'danger');
+        this.isLoadingMore = false;
+      }
+    });
+  }
 }

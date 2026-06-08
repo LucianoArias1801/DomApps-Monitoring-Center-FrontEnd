@@ -45,17 +45,21 @@
           </ion-row>
         </div>
 
-        <div class="table-container">
+        <div class="table-container" (scroll)="onTableScroll($event)">
           <table class="data-table">
             <thead>
               <tr>
                 <th *ngFor="let col of dynamicColumns">{{ col }}</th>
+                <th>FECHA</th>
               </tr>
             </thead>
 
             <tbody>
               <tr *ngIf="isLoading">
-                <td [attr.colspan]="dynamicColumns.length" class="loading-row">
+                <td
+                  [attr.colspan]="dynamicColumns.length + 1"
+                  class="loading-row"
+                >
                   <ion-spinner name="crescent"></ion-spinner>
                   <p>Consultando registros en la base de datos...</p>
                 </td>
@@ -64,7 +68,7 @@
               <ng-container *ngIf="!isLoading">
                 <tr *ngIf="dynamicRows.length === 0">
                   <td
-                    [attr.colspan]="dynamicColumns.length"
+                    [attr.colspan]="dynamicColumns.length + 1"
                     style="text-align: center; padding: 30px; color: #64748b"
                   >
                     No se encontraron registros en este formato.
@@ -83,10 +87,37 @@
                       {{ row[col] || '-' }}
                     </span>
                   </td>
+
+                  <td
+                    style="
+                      white-space: nowrap;
+                      font-weight: 500;
+                      color: #475569;
+                    "
+                  >
+                    {{ row.fechaRegistro | date:'dd/MM/yyyy hh:mm a':'-0600' }}
+                  </td>
                 </tr>
               </ng-container>
             </tbody>
           </table>
+
+          <div
+            *ngIf="isLoadingMore"
+            style="text-align: center; padding: 20px; background: #ffffff"
+          >
+            <ion-spinner name="crescent" color="primary"></ion-spinner>
+            <p
+              style="
+                margin: 5px 0 0 0;
+                color: #64748b;
+                font-size: 14px;
+                font-weight: 500;
+              "
+            >
+              Cargando más registros...
+            </p>
+          </div>
         </div>
       </ion-col>
 
@@ -118,6 +149,23 @@
                   {{ selectedRecord?.['REGION'] || selectedRecord?.['REGIÓN'] ||
                   'Sin Región' }} • {{ selectedRecord?.['AGENCIA'] || 'Sin
                   Agencia' }}
+                </span>
+
+                <span
+                  style="
+                    font-size: 13px;
+                    color: #0284c7;
+                    font-weight: 600;
+                    display: block;
+                    margin-top: 6px;
+                  "
+                >
+                  <ion-icon
+                    name="calendar-outline"
+                    style="vertical-align: middle; margin-right: 4px"
+                  ></ion-icon>
+                  {{ selectedRecord?.fechaRegistro | date:'dd/MM/yyyy hh:mm
+                  a':'-0600' }} (CST)
                 </span>
               </div>
 
