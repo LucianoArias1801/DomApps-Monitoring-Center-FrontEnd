@@ -44,7 +44,6 @@ export class LoginPage implements OnInit {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      remember: [false]
     });
   }
 
@@ -61,34 +60,28 @@ export class LoginPage implements OnInit {
         next: (response: any) => {
           this.isLoading = false;
           
-          // 🎯 EL SECRETO: Forzamos el guardado inmediato en la página para ganarle al ciclo de vida
-          if (response && response.token) {
-            localStorage.setItem('domapps_token', response.token);
-            localStorage.setItem('domapps_user', JSON.stringify(response.user));
-          }
-          
-          console.log('🔑 [OK] Token inyectado con éxito. Intentando romper el AuthGuard...');
+          console.log('🔑 [OK] Login exitoso, redirigiendo...');
 
-          // Ejecutamos la navegación con un salvavidas por si el enrutador se queda trabado
-          this.router.navigate(['/records/2'], { replaceUrl: true })
-            .then((navigated) => {
-              if (navigated) {
-                console.log('🏁 ¡Navegación completada con éxito!');
-              } else {
-                console.warn('⚠️ El Router rechazó la navegación blanda. Aplicando redirección forzada...');
-                // Salvavidas definitivo si el árbol de rutas de Angular se quedó bloqueado en caché
-                window.location.href = '/records/2';
-              }
-            })
-            .catch((routingError) => {
-              console.error('❌ Error en el Router de Angular. Aplicando bypass:', routingError);
-              window.location.href = '/records/2';
-            });
+          this.router.navigate(['/records/2'], { replaceUrl: true });
         },
         error: (err: any) => {
-          console.error('Error al iniciar sesión:', err);
           this.isLoading = false;
-          this.presentErrorToast(err.error?.message || 'Correo o contraseña incorrectos.');
+          
+          let message = 'Error de conexión. Intenta más tarde.';
+          
+          if (err.status === 401) {
+            message = 'Correo o contraseña incorrectos.';
+          } else if (err.status === 0) {
+            message = 'No se pudo conectar al servidor. Verifica tu conexión.';
+          } else if (err.status === 404) {
+            message = 'Servicio de login no disponible. Contacta al administrador.';
+          } else if (err.status === 500) {
+            message = 'Error interno del servidor. Intenta más tarde.';
+          } else if (err.error?.message) {
+            message = err.error.message;
+          }
+          console.error('Error al iniciar sesión:', err);
+          this.presentErrorToast(message);
         }
       });
     }

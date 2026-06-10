@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { HttpParams } from '@angular/common/http';
+import { environment } from '../../../environments/environment'; // Importamos el environment para usar la URL base y la API key
 
 // 1. Importamos la clase de Autenticación para obtener el token
 import { Auth } from '../auth/auth'; 
@@ -19,7 +20,7 @@ import {
 export class DynamicFormsService {
 
   // Domain base de tu API de Node.js
-  private baseUrl = 'http://localhost:3000/api';
+  private baseUrl = environment.apiUrl;
 
   constructor(
     private http: HttpClient,

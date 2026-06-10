@@ -130,21 +130,31 @@ export class RecordsViewerPage implements OnInit {
   /**
    * Lee los registros de la base de datos, los inyecta en la tabla
    * y mantiene la selección actualizada tras una edición.
-   * @param preserveId Opcional. ID del registro que debe mantenerse seleccionado.
    */
   public loadEvents(preserveId?: number) {
     this.isLoading = true;
-
-    // 🚀 NUEVO: Reactivar el Scroll Infinito en el DOM cada vez que cargamos la tabla desde cero
+    
+    // Reactivar el Scroll Infinito en el DOM
     const infiniteScroll = document.querySelector('ion-infinite-scroll');
     if (infiniteScroll) {
       infiniteScroll.disabled = false;
     }
-    
-    this.dynamicFormsService.getFormRecords(this.currentTemplateId, this.activeFilters).subscribe({
+
+    // 🚀 BLINDAJE: Limpiamos el objeto de filtros para eliminar strings vacíos ("")
+    const cleanedFilters: any = {};
+    if (this.activeFilters) {
+      Object.keys(this.activeFilters).forEach(key => {
+        const val = this.activeFilters[key];
+        // Solo enviamos al backend si el parámetro tiene un valor real
+        if (val !== '' && val !== null && val !== undefined) {
+          cleanedFilters[key] = val;
+        }
+      });
+    }
+
+    this.dynamicFormsService.getFormRecords(this.currentTemplateId, cleanedFilters).subscribe({
       next: (records: any[]) => {
         
-        // 1. Sanitización y mapeo original intacto
         this.dynamicRows = records.map(record => {
           const cleanAnswers: any = {};
           
@@ -155,37 +165,34 @@ export class RecordsViewerPage implements OnInit {
             });
           }
 
-          // 🚀 CORRECCIÓN UTC: Reemplazamos el espacio por 'T' y agregamos la 'Z' al final
           return {
             recordId: record.recordId,
+            // Guardamos estrictamente en formato UTC para evitar desfases de horario
             fechaRegistro: record.recordDatetime ? record.recordDatetime.replace(' ', 'T') + 'Z' : null,
             comentario: record.comments,
             ...cleanAnswers 
           };
         });
 
-        // 2. 🎯 LA MAGIA: Si veníamos de una edición, buscamos el registro fresco ya sanitizado
         if (preserveId) {
           const freshRecord = this.dynamicRows.find(r => r.recordId === preserveId);
-          
           if (freshRecord) {
-            // Al sobreescribir este objeto, Angular refresca la columna derecha al instante
             this.selectedRecord = freshRecord; 
           }
         }
 
         this.isLoading = false;
 
+        // Auto-relleno automático para monitores grandes si no se genera scrollbar
         setTimeout(() => {
           const container = document.querySelector('.table-container');
-          // Comprobamos si el contenido de la tabla es más pequeño que el contenedor gris
           if (container && container.scrollHeight <= container.clientHeight) {
-             // Como no hay scrollbar visible, obligamos a cargar la siguiente página
              if (this.dynamicRows.length > 0) {
                this.loadMoreEventsNative();
              }
           }
         }, 150);
+
       },
       error: (err: any) => {
         console.error('❌ Error al cargar los registros:', err);
@@ -372,18 +379,18 @@ public onVehicleSelected(data: Record<string, string>) {
       component: FilterModalComponent,
       componentProps: {
         templateId: this.currentTemplateId,
-        currentFilters: this.activeFilters // Le mandamos lo que ya estaba seleccionado
+        currentFilters: this.activeFilters,
+        formFields: this.formFields // 🚀 NUEVO: Le pasamos los campos dinámicos del backend
       }
     });
 
     await modal.present();
 
-    // Cuando el modal se cierra, cachamos los datos
     const { data } = await modal.onDidDismiss();
 
     if (data) {
-      this.activeFilters = data; // Guardamos el estado
-      this.loadEvents();         // Recargamos la tabla
+      this.activeFilters = data; 
+      this.loadEvents();         
     }
   }
 
@@ -648,9 +655,20 @@ private getMexicoCSTDateTimeString(): string {
     // Localizamos el ID más antiguo (el último de la lista actual)
     const oldestRecordId = this.dynamicRows[this.dynamicRows.length - 1].recordId;
 
-    // Fusionamos los filtros de tu modal con la ID del cursor de paginación
+    // 🚀 BLINDAJE: Hacemos la misma limpieza para la paginación del scroll infinito
+    const cleanedFilters: any = {};
+    if (this.activeFilters) {
+      Object.keys(this.activeFilters).forEach(key => {
+        const val = this.activeFilters[key];
+        if (val !== '' && val !== null && val !== undefined) {
+          cleanedFilters[key] = val;
+        }
+      });
+    }
+
+    // Fusionamos los filtros limpios con la ID del cursor de paginación
     const paginationFilters = { 
-      ...this.activeFilters, 
+      ...cleanedFilters, 
       lastId: oldestRecordId 
     };
 
@@ -659,7 +677,6 @@ private getMexicoCSTDateTimeString(): string {
         if (newRecords.length === 0) {
           this.presentToast('Has llegado al final del historial.', 'warning');
         } else {
-          // Mapeamos y sanitizamos el nuevo lote de respuestas de la BD
           const formattedNewRecords = newRecords.map(record => {
             const cleanAnswers: any = {};
             if (record.answers) {
@@ -670,17 +687,15 @@ private getMexicoCSTDateTimeString(): string {
             }
             return {
               recordId: record.recordId,
-              // 🚀 CORRECCIÓN UTC: Forzamos la zona horaria universal
               fechaRegistro: record.recordDatetime ? record.recordDatetime.replace(' ', 'T') + 'Z' : null,
               comentario: record.comments,
               ...cleanAnswers 
             };
           });
 
-          // Concatenamos el nuevo lote abajo de tus registros actuales sin parpadear
           this.dynamicRows = [...this.dynamicRows, ...formattedNewRecords];
         }
-        this.isLoadingMore = false; // Apagamos el indicador
+        this.isLoadingMore = false;
       },
       error: (err: any) => {
         console.error('❌ Error al paginar registros:', err);

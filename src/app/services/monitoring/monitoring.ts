@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Auth } from '../auth/auth'; // Asegúrate de que la ruta apunte a tu servicio Auth
+import { environment } from '../../../environments/environment'; // Importamos el environment para usar la URL base y la API key
 
 @Injectable({
   providedIn: 'root'
 })
 export class MonitoringService {
 
-  private baseUrl = 'http://localhost:3000/api';
+  private baseUrl = environment.apiUrl;
   private templateId = 2; // El ID para Monitoreo según tu documentación [cite: 35, 38, 47, 84]
 
   constructor(

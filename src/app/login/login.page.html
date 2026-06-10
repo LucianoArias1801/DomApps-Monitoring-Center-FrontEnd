@@ -28,6 +28,13 @@
             >
             </ion-input>
           </ion-item>
+
+          <ion-text
+            color="danger"
+            *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+          >
+            Correo electrónico inválido
+          </ion-text>
         </div>
 
         <div class="input-group">
@@ -35,11 +42,22 @@
           <ion-item lines="none" class="custom-input-item">
             <ion-input
               formControlName="password"
-              type="password"
+              [type]="showPassword ? 'text' : 'password'"
               placeholder="••••••••"
             >
             </ion-input>
+            <ion-button slot="end" fill="clear" (click)="togglePassword()">
+              <ion-icon
+                [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+              ></ion-icon>
+            </ion-button>
           </ion-item>
+          <ion-text
+            color="danger"
+            *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+          >
+            La contraseña es requerida
+          </ion-text>
         </div>
 
         <ion-button
@@ -47,9 +65,10 @@
           type="button"
           (click)="onLogin()"
           class="login-btn"
-          [disabled]="loginForm.invalid"
+          [disabled]="loginForm.invalid || isLoading"
         >
-          Iniciar sesión
+          <ion-spinner name="crescent" *ngIf="isLoading"></ion-spinner>
+          <span *ngIf="!isLoading">Iniciar sesión</span>
         </ion-button>
       </form>
     </div>
