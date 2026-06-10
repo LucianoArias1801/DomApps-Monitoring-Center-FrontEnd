@@ -1,3 +1,5 @@
+//npm start o ionic serve
+
 export const environment = {
   production: false,
   // Apunta al backend local
