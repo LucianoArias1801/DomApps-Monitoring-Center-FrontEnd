@@ -234,15 +234,6 @@ ion-content.main-content {
     margin: 0;
     line-height: 1.3;
   }
-
-  // ✨ AGREGAR ESTO: Forzamos el tamaño del icono de editar aquí mismo
-  .edit-btn {
-    ion-icon {
-      font-size: 26px !important;
-      transform: scale(1.4) !important;
-      color: #0284c7; /* Opcional: un tono azul oscuro para que resalte más */
-    }
-  }
 }
 
 .event-status-center {
@@ -497,21 +488,6 @@ ion-modal.stacking-modal {
     height: 36px;
     margin: 0;
   }
-
-  ion-button.domapps-icon-btn {
-    --color: #475569 !important;
-    --border-radius: 50%;
-    height: 36px;
-    width: 36px;
-    margin: 0;
-
-    // ✨ AQUÍ ESTÁ LA MAGIA PARA EL LÁPIZ: 
-    // Apuntamos directamente al icono dentro del botón y forzamos su escala
-    ion-icon {
-      font-size: 26px !important;
-      transform: scale(1.3) !important;
-    }
-  }
 }
 
 // ? ==========================================================================
@@ -635,5 +611,12 @@ ion-modal.stacking-modal {
     // 🛡️ Escudo anti-aplastamiento
     flex-shrink: 0;
     white-space: nowrap;
+  }
+}
+
+.edit-btn {
+  ion-icon {
+    font: size 10px !important;
+    color: #0284c7 !important;
   }
 }

@@ -82,8 +82,15 @@ export class DynamicFormComponent implements OnInit {
     groupControls['record_datetime'] = [nowISO, Validators.required];
 
     fields.forEach(field => {
+      
+      // ✨ INTERCEPCIÓN FRONTEND: Si es el campo ENLACE, le quitamos lo obligatorio
+      if (field.fieldName && field.fieldName.toUpperCase().includes('ENLACE')) {
+        field.required = false;
+      }
+
       const validators = [];
       
+      // Como ya le pusimos false arriba, Angular se saltará este if para "Enlace"
       if (field.required) {
         validators.push(Validators.required);
       }
