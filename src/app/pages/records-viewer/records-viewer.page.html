@@ -175,7 +175,11 @@
                 (click)="openEditModal()"
                 style="margin-top: -4px"
               >
-                <ion-icon name="pencil-outline"></ion-icon>
+                <ion-icon
+                  name="pencil-outline"
+                  style="font-size: 26px !important; transform: scale(1.2)"
+                >
+                </ion-icon>
               </ion-button>
             </div>
 
@@ -246,17 +250,37 @@
                 *ngIf="selectedRecord?.['CANTIDAD DE VECES'] || selectedRecord?.['CANTIDAD']"
               >
                 <span class="label">CANTIDAD DE VECES:</span>
+
                 <div class="qty-actions">
-                  <span class="value"
-                    >{{ selectedRecord?.['CANTIDAD DE VECES'] ||
-                    selectedRecord?.['CANTIDAD'] }}</span
+                  <span
+                    class="value"
+                    style="margin-right: 15px; font-weight: bold"
                   >
+                    {{ selectedRecord?.['CANTIDAD DE VECES'] ||
+                    selectedRecord?.['CANTIDAD'] }}
+                  </span>
+
+                  <ion-button
+                    fill="clear"
+                    class="sub-qty-btn"
+                    (click)="decreaseQuantity()"
+                    [disabled]="(selectedRecord?.['CANTIDAD DE VECES'] || selectedRecord?.['CANTIDAD'] || 0) <= 0"
+                  >
+                    <ion-icon
+                      name="remove-circle-outline"
+                      style="font-size: 1.5em"
+                    ></ion-icon>
+                  </ion-button>
+
                   <ion-button
                     fill="clear"
                     class="add-qty-btn"
                     (click)="increaseQuantity()"
                   >
-                    <ion-icon name="add-circle-outline"></ion-icon>
+                    <ion-icon
+                      name="add-circle-outline"
+                      style="font-size: 1.5em"
+                    ></ion-icon>
                   </ion-button>
                 </div>
               </div>

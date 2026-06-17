@@ -18,7 +18,7 @@ import { FilterModalComponent } from '../../components/filter-modal/filter-modal
 
 // Iconos que usa la vista
 import { addIcons } from 'ionicons';
-import { addCircleOutline, downloadOutline, funnelOutline, imageOutline, pencilOutline, listOutline, closeCircle } from 'ionicons/icons';
+import { addCircleOutline, downloadOutline, funnelOutline, imageOutline, pencilOutline, listOutline, closeCircle, removeCircleOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-records-viewer',
@@ -67,7 +67,7 @@ export class RecordsViewerPage implements OnInit {
     private auth: Auth,
     private modalCtrl: ModalController
   ) {
-    addIcons({ addCircleOutline, downloadOutline, funnelOutline, imageOutline, pencilOutline, listOutline, closeCircle });
+    addIcons({ addCircleOutline, downloadOutline, funnelOutline, imageOutline, pencilOutline, listOutline, closeCircle, removeCircleOutline });
   }
 
   // ==========================================================================
@@ -470,6 +470,60 @@ public onVehicleSelected(data: Record<string, string>) {
       error: (err: any) => {
         console.error('❌ Error al actualizar la cantidad:', err);
         // Si el servidor falla (sin internet), revertimos el número visualmente
+        this.selectedRecord[qtyKey] = currentQty.toString();
+        this.presentToast('Error de red: No se pudo guardar la nueva cantidad', 'danger');
+      }
+    });
+  }
+
+  public decreaseQuantity() {
+    if (!this.selectedRecord) return;
+
+    // 1. Identificar cómo se llama la columna
+    const qtyKey = this.selectedRecord['CANTIDAD DE VECES'] !== undefined ? 'CANTIDAD DE VECES' :
+                   this.selectedRecord['CANTIDAD'] !== undefined ? 'CANTIDAD' : null;
+
+    if (!qtyKey) return;
+
+    // 2. Extraer el valor actual
+    const currentQty = parseInt(this.selectedRecord[qtyKey] || '0', 10);
+    
+    // 🛡️ SEGURIDAD: Prevenir que la cantidad sea menor a cero
+    if (currentQty <= 0) return; 
+
+    // 3. Restarle 1 matemáticamente
+    const newQty = currentQty - 1;
+
+    // 4. ✨ MAGIA VISUAL: Actualizamos la interfaz de inmediato
+    this.selectedRecord[qtyKey] = newQty.toString();
+
+    // 5. Buscar el ID real de este campo en la base de datos
+    const fieldDef = this.formFields.find((f: any) => f.fieldName.toUpperCase().replace(/[\r\n]+/g, '').trim() === qtyKey);
+
+    if (!fieldDef) {
+       console.error('❌ No se encontró el fieldId de la cantidad en la estructura.');
+       this.presentToast('Error interno: No se pudo localizar el campo en la BD.', 'danger');
+       return;
+    }
+
+    // 6. Armamos el paquete parcial exacto
+    const payload = {
+      answers: [
+        {
+          fieldId: fieldDef.id,
+          answer: newQty.toString()
+        }
+      ]
+    };
+
+    // 7. Enviamos el parche silencioso al servidor
+    this.dynamicFormsService.updateFormRecord(this.currentTemplateId, this.selectedRecord.recordId, payload).subscribe({
+      next: () => {
+        console.log(`✅ Cantidad reducida a ${newQty} en la base de datos.`);
+      },
+      error: (err: any) => {
+        console.error('❌ Error al actualizar la cantidad:', err);
+        // Si el servidor falla, revertimos el número visualmente
         this.selectedRecord[qtyKey] = currentQty.toString();
         this.presentToast('Error de red: No se pudo guardar la nueva cantidad', 'danger');
       }
