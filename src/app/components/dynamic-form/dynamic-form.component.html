@@ -109,11 +109,14 @@
               <ion-input
                 [formControlName]="'field_' + field.id"
                 type="number"
+                min="0"
                 inputmode="numeric"
                 placeholder="0"
                 style="--color: #1e293b"
+                (keydown)="preventNegativeInput($event)"
               >
               </ion-input>
+
               <div
                 slot="end"
                 *ngIf="
@@ -135,7 +138,7 @@
           <ng-container *ngSwitchCase="'DATETIME'">
             <label class="input-label">
               {{ field.fieldName }}
-              <span *ngIf="field.required" style="color: #ef4444">*</span>
+              <span *ngIf="field.required" style="color: #ef4444"></span>
             </label>
             <div class="domapps-input-item native-input-wrapper">
               <input

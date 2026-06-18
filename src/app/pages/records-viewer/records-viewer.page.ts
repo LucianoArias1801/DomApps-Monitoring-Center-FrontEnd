@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ToastController, IonModal } from '@ionic/angular';
+import { IonicModule, ToastController, IonModal, AlertController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 
 // Importamos el motor dinámico de la Fase 5 y el Header
@@ -18,7 +18,7 @@ import { FilterModalComponent } from '../../components/filter-modal/filter-modal
 
 // Iconos que usa la vista
 import { addIcons } from 'ionicons';
-import { addCircleOutline, downloadOutline, funnelOutline, imageOutline, pencilOutline, listOutline, closeCircle, removeCircleOutline } from 'ionicons/icons';
+import { addCircleOutline, downloadOutline, funnelOutline, imageOutline, pencilOutline, listOutline, closeCircle, removeCircleOutline, trashOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-records-viewer',
@@ -39,6 +39,7 @@ export class RecordsViewerPage implements OnInit {
   // Referencia al modal de creación en el HTML
   @ViewChild('newEventModal') newEventModal!: IonModal;
   @ViewChild('dynamicForm') dynamicForm!: DynamicFormComponent;
+  @ViewChild('deleteConfirmModal') deleteConfirmModal!: IonModal;
 
   // ==========================================================================
   // VARIABLES DE ESTADO Y DINAMISMO
@@ -60,14 +61,50 @@ export class RecordsViewerPage implements OnInit {
 
   public isLoadingMore: boolean = false; // Controla el spinner inferior de la tabla
 
+  // ==========================================================================
+  // ESTADO DEL REDIMENSIONAMIENTO (SPLIT PANE)
+  // ==========================================================================
+  public leftPanelWidth: number = 75; 
+  public isDragging: boolean = false;
+
+  public onDragStart(event: MouseEvent) {
+    this.isDragging = true;
+    // Añadimos una clase al body para evitar que el texto se seleccione mientras arrastramos
+    document.body.classList.add('resizing-active'); 
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  public onMouseMove(event: MouseEvent) {
+    if (!this.isDragging) return;
+
+    // Calculamos la nueva posición X del ratón con respecto al ancho total de la pantalla
+    const containerWidth = window.innerWidth;
+    let newWidthPercentage = (event.clientX / containerWidth) * 100;
+
+    // Ponemos límites: La tabla no puede ser menor al 30% ni mayor al 75%
+    if (newWidthPercentage < 30) newWidthPercentage = 30;
+    if (newWidthPercentage > 75) newWidthPercentage = 75;
+
+    this.leftPanelWidth = newWidthPercentage;
+  }
+
+  @HostListener('document:mouseup')
+  public onMouseUp() {
+    if (this.isDragging) {
+      this.isDragging = false;
+      document.body.classList.remove('resizing-active');
+    }
+  }
+
   constructor(
     private route: ActivatedRoute,
     private dynamicFormsService: DynamicFormsService,
     private toastController: ToastController,
     private auth: Auth,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private alertController: AlertController
   ) {
-    addIcons({ addCircleOutline, downloadOutline, funnelOutline, imageOutline, pencilOutline, listOutline, closeCircle, removeCircleOutline });
+    addIcons({ addCircleOutline, downloadOutline, funnelOutline, imageOutline, pencilOutline, listOutline, closeCircle, removeCircleOutline, trashOutline });
   }
 
   // ==========================================================================
@@ -530,6 +567,60 @@ public onVehicleSelected(data: Record<string, string>) {
     });
   }
 
+  // ==========================================================================
+  // ELIMINACIÓN DE REGISTROS (BORRADO LÓGICO CON MODAL CUSTOM)
+  // ==========================================================================
+  
+  /**
+   * Extrae la Matrícula y el ECO para mostrarlos juntos en el HTML
+   */
+  public getRecordName(): string {
+    if (!this.selectedRecord) return 'este registro';
+
+    const matricula = this.selectedRecord['MATRICULA'] || 
+                      this.selectedRecord['MATRÍCULA'] || 
+                      'SIN MATRÍCULA';
+                      
+    const eco = this.selectedRecord['ECO'] || 'SIN ECO';
+
+    // Retorna el formato combinado, por ejemplo: "ABC-123 - ECO 001"
+    return `${matricula} - ${eco}`;
+  }
+
+  /**
+   * Abre nuestro Modal HTML personalizado
+   */
+  public confirmDeleteRecord() {
+    if (!this.selectedRecord) return;
+    if (this.deleteConfirmModal) {
+      this.deleteConfirmModal.present();
+    }
+  }
+
+  /**
+   * Ejecuta la petición DELETE hacia el backend
+   */
+  public executeDeleteRecord() {
+    if (!this.selectedRecord) return;
+
+    this.isLoading = true;
+    
+    this.dynamicFormsService.deleteFormRecord(this.currentTemplateId, this.selectedRecord.recordId).subscribe({
+      next: () => {
+        this.presentToast('✅ Registro eliminado correctamente', 'success');
+        
+        this.deleteConfirmModal.dismiss(); // Cerramos la ventanita
+        this.selectedRecord = null;        // Limpiamos el panel derecho
+        this.loadEvents();                 // Recargamos la tabla
+      },
+      error: (err: any) => {
+        console.error('❌ Error al eliminar el registro:', err);
+        this.presentToast('Error de red al intentar eliminar el registro.', 'danger');
+        this.deleteConfirmModal.dismiss();
+        this.isLoading = false;
+      }
+    });
+  }
   // ==========================================================================
   // UTILS
   // ==========================================================================

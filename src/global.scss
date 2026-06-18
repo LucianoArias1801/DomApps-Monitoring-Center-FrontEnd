@@ -314,3 +314,34 @@ ion-datetime.universal-date-picker {
   width: 100%;
 }
 
+/* Estilo para que el icono se vea bien y no estorbe */
+.calendar-icon {
+  color: #94a3b8;
+  font-size: 20px;
+  pointer-events: none; /* Para que el clic pase directamente al input de fecha */
+  margin-right: 8px;
+}
+
+/* Forzamos que el input de fecha no se sobreponga al icono */
+.custom-input-item ion-input {
+  --padding-end: 30px; 
+}
+
+/* Aseguramos que el botón del calendario se vea bien y sea clickeable */
+.calendar-trigger-btn {
+  --color: #0284c7; /* Color azul para el icono */
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  --padding-end: 0;
+}
+
+/* Ajustamos el tamaño del icono dentro del botón */
+.calendar-trigger-btn ion-icon {
+  font-size: 22px;
+}
+
+/* Compensamos el espacio del botón para que el input no se encime */
+.custom-input-item {
+  --padding-end: 0;
+}

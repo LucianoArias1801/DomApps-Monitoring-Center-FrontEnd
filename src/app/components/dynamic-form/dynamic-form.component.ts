@@ -176,4 +176,10 @@ export class DynamicFormComponent implements OnInit {
       }
     });
   }
+
+  public preventNegativeInput(event: KeyboardEvent) {
+    if (event.key === '-' || event.key === 'e' || event.key === 'E') {
+      event.preventDefault();
+    }
+  }
 }

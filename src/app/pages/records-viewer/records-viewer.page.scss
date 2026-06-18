@@ -239,8 +239,10 @@ ion-content.main-content {
 .event-status-center {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 12px;
   margin-bottom: 24px;
+  flex-wrap: wrap; // Permite que bajen si no hay espacio
 
   .status-badge {
     padding: 6px 12px;
@@ -249,9 +251,26 @@ ion-content.main-content {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap; // Evita que el texto se rompa
+    display: inline-flex; // Mejor control
+    align-items: center;
 
-    &.alert-type { background-color: #fef2f2; color: #ef4444; }
-    &.status-code { background-color: #f1f5f9; color: #475569; }
+    &.alert-type {
+      background-color: #fef2f2;
+      color: #ef4444;
+    }
+
+    &.status-code {
+      background-color: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+
+    &.status-report {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
   }
 }
 
@@ -267,8 +286,12 @@ ion-content.main-content {
 
 .details-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px 12px;
+  /* ✨ Cambiamos '1fr 1fr' por 'max-content max-content' para que no se estiren */
+  grid-template-columns: max-content max-content; 
+  /* ✨ Empujamos ambas columnas al centro absoluto del panel */
+  justify-content: center; 
+  /* ✨ 16px de separación hacia abajo, y 48px de separación entre la columna izquierda y derecha */
+  gap: 16px 48px; 
   margin-bottom: 24px;
 }
 
@@ -276,9 +299,23 @@ ion-content.main-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  
+  /* ✨ NUEVO: Centra el contenido y el texto */
+  align-items: center; 
+  text-align: center;
 
-  .label { font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; }
-  .value { font-size: 13px; color: #0f172a; font-weight: 500; }
+  .label { 
+    font-size: 11px; 
+    color: #64748b; 
+    font-weight: 600; 
+    text-transform: uppercase; 
+  }
+  
+  .value { 
+    font-size: 13px; 
+    color: #0f172a; 
+    font-weight: 500; 
+  }
 }
 
 // ✨ NUEVO: Estilos para hacer grandes los botones de sumar y restar
@@ -615,8 +652,95 @@ ion-modal.stacking-modal {
 }
 
 .edit-btn {
+  --padding-start: 8px;
+  --padding-end: 8px;
   ion-icon {
-    font: size 10px !important;
-    color: #0284c7 !important;
+    font-size: 22px !important;
+    color: #0284c7 !important; /* Azul */
   }
+}
+
+.delete-btn {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  ion-icon {
+    font-size: 22px !important;
+    color: #ef4444 !important; /* Rojo intenso para peligro */
+  }
+}
+
+// ==========================================================================
+// ESTILOS PARA EL MODAL DE ELIMINAR
+// ==========================================================================
+ion-modal.confirm-modal {
+  --width: 90%;
+  --max-width: 400px;
+  --height: auto;
+  --border-radius: 16px;
+  --box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  align-items: center;
+  justify-content: center;
+}
+
+// ==========================================================================
+// PANELES REDIMENSIONABLES (SPLIT PANE)
+// ==========================================================================
+
+@media (min-width: 992px) {
+  /* Evitamos que las columnas salten a la siguiente línea al redimensionar */
+  .split-row {
+    flex-wrap: nowrap !important;
+  }
+
+  /* La columna izquierda obedece a la variable dinámica (por defecto 66.66% que es tu antiguo size=8) */
+  .split-left {
+    flex: 0 0 var(--left-panel-width, 66.66%) !important;
+    max-width: var(--left-panel-width, 66.66%) !important;
+    transition: none; /* Desactiva animaciones al arrastrar para evitar lag */
+  }
+
+  /* La columna derecha toma todo el espacio sobrante */
+  .split-right {
+    flex: 1 !important;
+    max-width: 100% !important;
+    transition: none;
+  }
+}
+
+/* El divisor central invisible pero clickeable */
+.resizer-bar {
+  display: none; // Oculto en móviles
+  
+  @media (min-width: 992px) {
+    display: flex;
+    width: 16px; // Área sensible al ratón
+    margin: 0 -4px; // Truco para que muerda un poco de espacio sin romper el grid
+    cursor: col-resize;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    user-select: none;
+
+    /* La barrita visual gris en el medio */
+    .resizer-handle {
+      width: 4px;
+      height: 40px;
+      background-color: #cbd5e1;
+      border-radius: 4px;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+
+    /* Efectos hover y cuando se está arrastrando */
+    &:hover .resizer-handle,
+    &.is-dragging .resizer-handle {
+      background-color: #3880ff;
+      transform: scaleX(1.5);
+    }
+  }
+}
+
+/* Prevenir selección de texto accidental en toda la pantalla mientras se arrastra */
+::ng-deep body.resizing-active {
+  user-select: none !important;
+  cursor: col-resize !important;
 }

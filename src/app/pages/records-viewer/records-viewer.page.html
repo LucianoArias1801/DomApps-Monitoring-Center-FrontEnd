@@ -2,8 +2,11 @@
 
 <ion-content class="main-content">
   <ion-grid class="full-height-grid ion-no-padding">
-    <ion-row class="full-height-row">
-      <ion-col size="12" size-lg="8" class="left-column">
+    <ion-row
+      class="full-height-row split-row"
+      [style.--left-panel-width]="leftPanelWidth + '%'"
+    >
+      <ion-col size="12" class="left-column split-left">
         <div class="actions-bar">
           <ion-row class="bitacora-header-row">
             <ion-col size="auto">
@@ -121,7 +124,15 @@
         </div>
       </ion-col>
 
-      <ion-col size="12" size-lg="4" class="right-column">
+      <div
+        class="resizer-bar"
+        (mousedown)="onDragStart($event)"
+        [class.is-dragging]="isDragging"
+      >
+        <div class="resizer-handle"></div>
+      </div>
+
+      <ion-col size="12" class="right-column split-right">
         <div class="detail-panel-card">
           <ng-container *ngIf="selectedRecord; else emptyState">
             <div class="evidence-image-placeholder">
@@ -169,17 +180,26 @@
                 </span>
               </div>
 
-              <ion-button
-                fill="clear"
-                class="domapps-icon-btn edit-btn"
-                (click)="openEditModal()"
-                style="margin-top: -4px"
+              <div
+                class="action-icons-group"
+                style="display: flex; gap: 4px; margin-top: -4px"
               >
-                <ion-icon
-                  name="pencil-outline"
-                  style="font-size: 20px; color: #0284c7"
-                ></ion-icon>
-              </ion-button>
+                <ion-button
+                  fill="clear"
+                  class="domapps-icon-btn edit-btn"
+                  (click)="openEditModal()"
+                >
+                  <ion-icon name="pencil-outline"></ion-icon>
+                </ion-button>
+
+                <ion-button
+                  fill="clear"
+                  class="domapps-icon-btn delete-btn"
+                  (click)="confirmDeleteRecord()"
+                >
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </div>
             </div>
 
             <div
@@ -435,6 +455,87 @@
               slot="start"
             ></ion-spinner>
             {{ isEditing ? 'Guardar Cambios' : 'Registrar evento' }}
+          </ion-button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal #deleteConfirmModal class="confirm-modal">
+    <ng-template>
+      <div
+        class="modal-wrapper"
+        style="height: auto; border-radius: 16px; background: #ffffff"
+      >
+        <div class="modal-body" style="padding: 32px 24px; text-align: center">
+          <div
+            class="empty-icon-wrapper"
+            style="
+              margin: 0 auto 20px auto;
+              background: #fef2f2;
+              width: 72px;
+              height: 72px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <ion-icon
+              name="trash-outline"
+              style="font-size: 36px; color: #ef4444"
+            ></ion-icon>
+          </div>
+
+          <h3
+            style="
+              font-size: 1.2rem;
+              font-weight: 700;
+              color: #0f172a;
+              margin: 0 0 12px 0;
+            "
+          >
+            ¿Eliminar Registro?
+          </h3>
+
+          <p
+            style="color: #475569; font-size: 14px; margin: 0; line-height: 1.6"
+          >
+            Estás a punto de eliminar permanentemente los datos de <br />
+            <strong style="color: #0f172a; font-size: 15px"
+              >{{ getRecordName() }}</strong
+            >.<br /><br />
+            Esta acción lo quitará del historial y no se puede deshacer.
+          </p>
+        </div>
+
+        <div
+          class="modal-footer"
+          style="
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 12px;
+          "
+        >
+          <ion-button
+            expand="block"
+            fill="outline"
+            color="medium"
+            (click)="deleteConfirmModal.dismiss()"
+            style="flex: 1; margin: 0; --border-radius: 8px; font-weight: 600"
+          >
+            Cancelar
+          </ion-button>
+
+          <ion-button
+            expand="block"
+            color="danger"
+            (click)="executeDeleteRecord()"
+            style="flex: 1; margin: 0; --border-radius: 8px; font-weight: 600"
+          >
+            Eliminar
           </ion-button>
         </div>
       </div>
