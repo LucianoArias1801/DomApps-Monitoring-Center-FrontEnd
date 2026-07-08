@@ -1,0 +1,152 @@
+<app-shared-modal-layout title="Exportar Datos" [subtitle]="dashboardTitle">
+  <div class="form-wrapper fade-in">
+    <form [formGroup]="exportForm" class="login-form">
+      <h4 class="section-title">
+        <ion-icon name="calendar-outline"></ion-icon>
+        Rango de Fechas (Máx. 3 Meses)
+      </h4>
+
+      <ion-row class="ion-no-padding">
+        <ion-col size="6" class="ion-no-padding" style="padding-right: 6px">
+          <div class="input-group">
+            <label class="field-label">Desde</label>
+            <ion-item lines="none" class="custom-input-item date-item">
+              <input
+                #startDateInput
+                type="date"
+                class="date-input-hidden"
+                [value]="exportForm.get('startDate')?.value || ''"
+                (change)="onDateSelected($event, 'startDate')"
+              />
+              <ion-button
+                fill="clear"
+                class="date-trigger-btn"
+                (click)="triggerDatePicker(startDateInput)"
+              >
+                <ion-icon
+                  name="calendar-outline"
+                  class="calendar-icon"
+                ></ion-icon>
+                <span class="date-display">{{
+                  getFormattedDate("startDate") || "Desde"
+                }}</span>
+              </ion-button>
+            </ion-item>
+          </div>
+        </ion-col>
+
+        <ion-col size="6" class="ion-no-padding" style="padding-left: 6px">
+          <div class="input-group">
+            <label class="field-label">Hasta</label>
+            <ion-item lines="none" class="custom-input-item date-item">
+              <input
+                #endDateInput
+                type="date"
+                class="date-input-hidden"
+                [value]="exportForm.get('endDate')?.value || ''"
+                (change)="onDateSelected($event, 'endDate')"
+              />
+              <ion-button
+                fill="clear"
+                class="date-trigger-btn"
+                (click)="triggerDatePicker(endDateInput)"
+              >
+                <ion-icon
+                  name="calendar-outline"
+                  class="calendar-icon"
+                ></ion-icon>
+                <span class="date-display">{{
+                  getFormattedDate("endDate") || "Hasta"
+                }}</span>
+              </ion-button>
+            </ion-item>
+          </div>
+        </ion-col>
+      </ion-row>
+
+      <div class="divider"></div>
+
+      <h4 class="section-title">
+        <ion-icon name="list-outline"></ion-icon>
+        Estructura de Control
+      </h4>
+
+      <div class="input-group">
+        <label class="field-label">Región</label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-spinner
+            *ngIf="isLoadingFilters"
+            name="dots"
+            color="primary"
+          ></ion-spinner>
+
+          <ion-select
+            *ngIf="!isLoadingFilters"
+            formControlName="region"
+            interface="alert"
+            [multiple]="true"
+            placeholder="Selecciona una Región"
+            class="custom-form-select"
+            (ionChange)="onRegionChange()"
+          >
+            <ion-select-option value="">Todas</ion-select-option>
+            <ion-select-option *ngFor="let r of regions" [value]="r">{{
+              r
+            }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <div class="input-group">
+        <label class="field-label">Agencia Operativa</label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-spinner
+            *ngIf="isLoadingFilters"
+            name="dots"
+            color="primary"
+          ></ion-spinner>
+
+          <ion-select
+            *ngIf="!isLoadingFilters"
+            formControlName="agencia"
+            interface="alert"
+            [multiple]="true"
+            placeholder="Selecciona una Agencia"
+            class="custom-form-select"
+          >
+            <ion-select-option value="">Todas</ion-select-option>
+            <ion-select-option *ngFor="let a of agencies" [value]="a">{{
+              a
+            }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+    </form>
+  </div>
+
+  <ion-row modal-footer style="width: 100%">
+    <ion-col size="6">
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="medium"
+        (click)="cancel()"
+        style="--border-radius: 8px; margin: 0"
+      >
+        Cancelar
+      </ion-button>
+    </ion-col>
+    <ion-col size="6">
+      <ion-button
+        expand="block"
+        color="primary"
+        (click)="applyFilters()"
+        [disabled]="exportForm.invalid || isLoadingFilters"
+        style="--border-radius: 8px; margin: 0"
+      >
+        <ion-icon slot="start" name="download-outline"></ion-icon>
+        Exportar
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</app-shared-modal-layout>

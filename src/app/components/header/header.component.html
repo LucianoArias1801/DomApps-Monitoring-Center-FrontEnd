@@ -30,6 +30,16 @@
           <ion-content>
             <ion-list lines="none" class="user-menu-list">
               <ion-item
+                button
+                (click)="navigateToDashboards(); menuPopover.dismiss()"
+              >
+                <ion-icon name="bar-chart-outline" slot="start"></ion-icon>
+                <ion-label>Repertorio de Dashboards</ion-label>
+              </ion-item>
+
+              <div class="menu-divider"></div>
+
+              <ion-item
                 *ngFor="let template of formTemplates"
                 button
                 (click)="navigateToRecords(template.id); menuPopover.dismiss()"

@@ -345,3 +345,15 @@ ion-datetime.universal-date-picker {
 .custom-input-item {
   --padding-end: 0;
 }
+
+ion-modal.custom-inline-modal {
+  --width: 90%;
+  --max-width: 450px;
+  --height: auto;              /* ← Se ajusta al contenido */
+  --min-height: 300px;         /* ← Altura mínima para que no se aplaste */
+  --max-height: 90vh;          /* ← Para que no se salga de la pantalla */
+  --border-radius: 16px;
+  --box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  --background: #ffffff;
+  --overflow: hidden;          /* ← Para que los bordes redondeados se mantengan */
+}

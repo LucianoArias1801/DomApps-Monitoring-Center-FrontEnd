@@ -9,7 +9,8 @@ import { DynamicFormsService } from '../../services/dynamic-forms/dynamic-forms'
 import { FormTemplate } from '../../models/dynamic-forms.model';
 
 import { addIcons } from 'ionicons';
-import { menuOutline, desktopOutline, clipboardOutline, logOutOutline, documentTextOutline } from 'ionicons/icons';
+// ✨ NUEVO: Agregamos barChartOutline a las importaciones
+import { menuOutline, desktopOutline, clipboardOutline, logOutOutline, documentTextOutline, barChartOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-header',
@@ -30,7 +31,8 @@ export class HeaderComponent implements OnInit {
     private auth: Auth,
     private dynamicFormsService: DynamicFormsService // <-- Inyectamos el nuevo servicio
   ) {
-    addIcons({ menuOutline, desktopOutline, clipboardOutline, logOutOutline, documentTextOutline });
+    // ✨ NUEVO: Registramos barChartOutline para poder usarlo en el HTML
+    addIcons({ menuOutline, desktopOutline, clipboardOutline, logOutOutline, documentTextOutline, barChartOutline });
     
     const userData = this.auth.getUserData();
     if (userData && userData.username) {
@@ -45,16 +47,23 @@ export class HeaderComponent implements OnInit {
 
   private loadMenuOptions() {
     this.dynamicFormsService.getTemplates().subscribe({
-      // 1. Cambialo a FormTemplate[] (Recuerda importar FormTemplate arriba)
       next: (templates: FormTemplate[]) => { 
         this.formTemplates = templates;
         console.log('✅ Menú dinámico cargado con las plantillas:', this.formTemplates);
       },
-      // 2. Este déjalo como 'any', es totalmente correcto
       error: (err: any) => { 
         console.error('❌ Error al cargar las opciones del menú:', err);
       }
     });
+  }
+
+  /**
+   * ✨ NUEVO: Método de navegación hacia el Hub de Tableros
+   */
+  public navigateToDashboards() {
+    console.log('Navegando hacia el Hub de Tableros...');
+    this.router.navigate(['/dashboards-hub']);
+    // Nota: El popover.dismiss() lo manejaremos directamente en el HTML
   }
 
   /**

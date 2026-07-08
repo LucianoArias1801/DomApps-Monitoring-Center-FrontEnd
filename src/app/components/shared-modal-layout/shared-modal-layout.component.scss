@@ -1,0 +1,89 @@
+/* ==========================================================================
+   🏛️ ARQUITECTURA LIMPIA (Sin !important)
+   ========================================================================== */
+app-shared-modal-layout {
+  // Los componentes personalizados son 'inline' por defecto. 
+  // Al pasarlo a flex, el navegador ya entiende cómo calcular su tamaño.
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+
+  .custom-modal-header { 
+    background: #ffffff; 
+    padding-top: 10px; 
+    border-bottom: 1px solid #f1f5f9; 
+    
+    ion-toolbar { 
+      // Usamos las variables oficiales de Ionic. No necesitan !important 
+      // porque Ionic las lee directamente desde su raíz.
+      --background: #ffffff; 
+      --color: #1e293b; 
+    }
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-right: 8px;
+  }
+
+  .title-area {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 16px;
+  }
+
+  .modal-title { 
+    font-weight: 700; 
+    color: #1e293b; 
+    font-size: 18px; 
+    padding: 0;
+  }
+
+  .modal-subtitle {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  .custom-modal-header ion-button { 
+    --color: #94a3b8; 
+    margin: 0;
+    ion-icon { font-size: 28px; }
+    &:hover { --color: #64748b; }
+  }
+
+  /* 🎯 El secreto de la altura: flex-grow */
+  .custom-modal-content {
+    flex: 1 1 0%;           /* toma todo el espacio sobrante */
+    min-height: 0;          /* evita overflow en flex */
+    height: 100%;           /* respaldo para navegadores */
+    --background: #ffffff;
+    
+    // OPCIONAL: si el contenido interno no se estira, 
+    // podemos forzar que el scroll-content también sea flex
+    &::part(scroll) {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+  }
+
+
+  .custom-modal-footer { 
+    background: #ffffff; 
+    border-top: 1px solid #f1f5f9; 
+  }
+}
+
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  // o min-height: 100%;
+}

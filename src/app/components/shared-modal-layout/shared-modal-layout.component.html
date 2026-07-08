@@ -1,0 +1,29 @@
+<ion-header class="ion-no-border custom-modal-header">
+  <ion-toolbar>
+    <div class="header-content">
+      <div class="title-area">
+        <ion-title class="modal-title">{{ title }}</ion-title>
+        <span class="modal-subtitle" *ngIf="subtitle">{{ subtitle }}</span>
+      </div>
+
+      <ion-buttons slot="end">
+        <ion-button color="medium" (click)="close()">
+          <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding custom-modal-content">
+  <div class="content-wrapper">
+    <ng-content></ng-content>
+  </div>
+</ion-content>
+
+<ion-footer
+  class="ion-no-border ion-padding custom-modal-footer"
+  *ngIf="showFooter"
+>
+  <ng-content select="[modal-footer]"></ng-content>
+</ion-footer>

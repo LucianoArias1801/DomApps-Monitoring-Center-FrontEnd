@@ -6,24 +6,30 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth } from './services/auth/auth'; 
 
-
-// 2. Guardián de seguridad (Verifica sesión activa)
-const authGuard = () => {
+// 2. Guardián de seguridad (Verifica sesión activa y Roles)
+const authGuard = (route: any, state: any) => {
   const auth = inject(Auth);
   const router = inject(Router);
   const isAuth = auth.isAuthenticated();
   
-  console.log('🛡️ [Rastreo Guard] ¿Tiene sesión activa según el servicio?:', isAuth);
-  console.log('🔑 [Rastreo Guard] Token actual en memoria:', auth.getToken());
-  
-  if (isAuth) {
-    console.log('✅ [Rastreo Guard] Acceso PERMITIDO a la bitácora.');
-    return true; 
-  } else {
-    console.warn('🚨 [Rastreo Guard] Acceso DENEGADO. Redirigiendo al login...');
+  // Si no hay sesión activa, mandamos al login
+  if (!isAuth) {
     router.navigate(['/login']); 
     return false;
   }
+
+  // Obtenemos los datos del usuario conectado
+  const user = auth.getUserData();
+  const userRole = user?.role || '';
+
+  // 🛡️ REGLA RBAC: Si es "Visualizador" y quiere entrar a "records", lo rebotamos al Hub
+  if (userRole === 'Visualizador' && state.url.includes('/records')) {
+    router.navigate(['/dashboards-hub'], { replaceUrl: true });
+    return false;
+  }
+
+  // Si tiene sesión y su rol se lo permite, pasa
+  return true; 
 };
 
 export const routes: Routes = [
@@ -51,11 +57,20 @@ export const routes: Routes = [
     // 🚀 CARGA DE LA NUEVA PÁGINA REFACTORIZADA DE LA FASE 6
     loadComponent: () => import('./pages/records-viewer/records-viewer.page').then(m => m.RecordsViewerPage),
   },
+
+  //* ==========================================================================
+  //* NUEVA RUTA: HUB DE TABLEROS (Protegida)
+  //* ==========================================================================
+  {
+    path: 'dashboards-hub',
+    canActivate: [authGuard], // Protegemos los tableros con el mismo guardián
+    loadComponent: () => import('./pages/dashboards-hub/dashboards-hub.page').then(m => m.DashboardsHubPage)
+  },
   
   //* Ruta comodín (Catch-all)
-  // Si el usuario escribe cualquier cosa errónea en la URL, lo redirigimos al formato por defecto
+  // SIEMPRE DEBE IR AL FINAL. Si no encuentra ninguna de las de arriba, redirige aquí.
   {
     path: '**',
     redirectTo: 'records/2',
-  },
+  }
 ];

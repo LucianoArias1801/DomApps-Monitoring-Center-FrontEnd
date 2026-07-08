@@ -1,0 +1,118 @@
+<app-shared-modal-layout title="Importar Datos" [subtitle]="dashboardTitle">
+  <div class="form-wrapper fade-in">
+    <form [formGroup]="importForm" class="login-form">
+      <h4 class="section-title">
+        <ion-icon name="time-outline"></ion-icon>
+        Parámetros de Corte
+      </h4>
+
+      <ion-row class="ion-no-padding">
+        <ion-col size="6" class="ion-no-padding" style="padding-right: 6px">
+          <div class="input-group">
+            <label class="field-label">Fecha de Corte</label>
+            <ion-item lines="none" class="custom-input-item date-item">
+              <input
+                type="date"
+                formControlName="fechaCorte"
+                style="
+                  width: 100%;
+                  border: none;
+                  background: transparent;
+                  padding: 10px;
+                "
+              />
+            </ion-item>
+          </div>
+        </ion-col>
+
+        <ion-col size="6" class="ion-no-padding" style="padding-left: 6px">
+          <div class="input-group">
+            <label class="field-label">Hora de Corte</label>
+            <ion-item lines="none" class="custom-input-item date-item">
+              <input
+                type="time"
+                formControlName="horaCorte"
+                style="
+                  width: 100%;
+                  border: none;
+                  background: transparent;
+                  padding: 10px;
+                "
+              />
+            </ion-item>
+          </div>
+        </ion-col>
+      </ion-row>
+
+      <div class="divider"></div>
+
+      <h4 class="section-title">
+        <ion-icon name="document-attach-outline"></ion-icon>
+        Archivo de Origen
+      </h4>
+
+      <div
+        class="file-upload-container"
+        (click)="!selectedFile && triggerFileInput()"
+        [class.has-file]="!!selectedFile"
+      >
+        <input
+          type="file"
+          #fileInput
+          (change)="onFileSelected($event)"
+          accept=".csv, .xlsx, .xls"
+          hidden
+        />
+
+        <div *ngIf="!selectedFile" class="upload-placeholder">
+          <ion-icon name="cloud-upload-outline" class="large-icon"></ion-icon>
+          <p>Toca aquí para seleccionar un archivo</p>
+          <span class="sub-text">Soporta .CSV y .XLSX</span>
+        </div>
+
+        <div *ngIf="selectedFile" class="file-selected">
+          <ion-icon name="document-attach-outline" class="file-icon"></ion-icon>
+          <div class="file-info">
+            <span class="file-name">{{ selectedFile.name }}</span>
+            <span class="file-size"
+              >{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</span
+            >
+          </div>
+          <ion-button
+            fill="clear"
+            color="danger"
+            (click)="$event.stopPropagation(); removeFile()"
+          >
+            Eliminar
+          </ion-button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <ion-row modal-footer style="width: 100%">
+    <ion-col size="6">
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="medium"
+        (click)="cancel()"
+        style="--border-radius: 8px; margin: 0"
+      >
+        Cancelar
+      </ion-button>
+    </ion-col>
+    <ion-col size="6">
+      <ion-button
+        expand="block"
+        color="primary"
+        (click)="applyImport()"
+        [disabled]="importForm.invalid || !selectedFile"
+        style="--border-radius: 8px; margin: 0"
+      >
+        <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
+        Subir
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</app-shared-modal-layout>

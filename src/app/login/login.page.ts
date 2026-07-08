@@ -33,9 +33,15 @@ export class LoginPage implements OnInit {
   }
 
   ngOnInit() {
-    // Si ya tiene sesión activa, lo mandamos a la ruta maestra (Visor universal)
+    // Si ya tiene sesión activa, evaluamos su rol para mandarlo a su pantalla correcta
     if (this.auth.isAuthenticated()) {
-      this.router.navigate(['/records/2'], { replaceUrl: true });
+      const user = this.auth.getUserData();
+      
+      if (user?.role === 'Visualizador') {
+        this.router.navigate(['/dashboards-hub'], { replaceUrl: true });
+      } else {
+        this.router.navigate(['/records/2'], { replaceUrl: true });
+      }
     }
     this.initLoginForm();
   }
@@ -59,10 +65,16 @@ export class LoginPage implements OnInit {
       this.auth.login({ email, password }).subscribe({
         next: (response: any) => {
           this.isLoading = false;
-          
-          console.log('🔑 [OK] Login exitoso, redirigiendo...');
+        
 
-          this.router.navigate(['/records/2'], { replaceUrl: true });
+          // 🚀 REGLA RBAC: Leemos el rol del usuario desde la respuesta
+          const userRole = response.user?.role;
+
+          if (userRole === 'Visualizador') {
+            this.router.navigate(['/dashboards-hub'], { replaceUrl: true });
+          } else {
+            this.router.navigate(['/records/2'], { replaceUrl: true });
+          }
         },
         error: (err: any) => {
           this.isLoading = false;

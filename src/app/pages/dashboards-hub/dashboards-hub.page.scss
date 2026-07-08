@@ -1,0 +1,322 @@
+.main-content {
+  --background: var(--app-bg);
+}
+
+.page-header {
+  padding: 24px 24px 8px 24px;
+}
+
+.dashboards-grid {
+  padding: 0 16px 24px 16px;
+}
+
+/* ==========================================================================
+   DISEÑO DE LA TARJETA (Basado en el Wireframe)
+   ========================================================================== */
+.hub-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  margin: 8px;
+  overflow: hidden; /* Mantiene la imagen dentro de los bordes redondeados */
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+  /* Efecto de elevación al pasar el mouse (PC) */
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    border-color: #cbd5e1;
+  }
+
+  /* 1. PARTE SUPERIOR: Contenedor de la Imagen */
+  .card-image-wrapper {
+    width: 100%;
+    aspect-ratio: 16 / 9; /* Obliga a que siempre sea un rectángulo horizontal perfecto */
+    position: relative;   /* Permite que la imagen se posicione de forma absoluta dentro */
+    background: #f8fafc;
+    border-bottom: 1px solid #f0f0f0;
+    overflow: hidden;     /* Asegura que nada se salga de los límites */
+
+    .image-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      ion-icon {
+        font-size: 48px;
+        color: #cbd5e1;
+      }
+    }
+
+    /* Imagen real (cuando exista) */
+    img {
+      position: absolute; /* 👈 Al ser absoluta, no puede empujar ni deformar al padre */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;  /* Escala la imagen proporcionalmente sin deformarla */
+    }
+
+    /* Badge opcional flotando sobre la imagen */
+    .card-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 2; /* Asegura que flote por encima de la imagen absoluta */
+    }
+  }
+
+  /* 2. PARTE INFERIOR: Título y Botón */
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 8px 12px 16px;
+    background: #ffffff;
+
+    .title-container {
+      flex: 1;
+      min-width: 0; /* Necesario para que truncate-text funcione en Flexbox */
+      
+      .board-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+      }
+    }
+
+    .menu-btn {
+      --color: #64748b;
+      --padding-start: 8px;
+      --padding-end: 8px;
+      --border-radius: 8px;
+      margin: 0;
+      height: 36px;
+
+      &:hover {
+        --background: #f1f5f9;
+        --color: var(--app-primary);
+      }
+
+      ion-icon {
+        font-size: 20px;
+      }
+    }
+  }
+}
+
+/* Color especial para el icono de subir datos */
+.upload-icon {
+  color: #10b981; /* Verde esmeralda */
+}
+
+/* ==========================================================================
+   GOBERNAZA VISUAL DEL POPOVER (Fuerza el tema claro contra el modo oscuro)
+   ========================================================================== */
+::ng-deep {
+  ion-popover.domapps-popover {
+    --background: #ffffff !important;
+    --border-radius: 12px;
+    --box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+    --min-width: 220px;
+    --offset-y: 8px; 
+
+    /* Forzamos el fondo blanco del contenedor interno */
+    ion-content {
+      --background: #ffffff !important;
+      background: #ffffff !important;
+    }
+  }
+}
+
+/* Estilos de la lista y los ítems dentro del menú desplegable */
+.user-menu-list {
+  padding: 8px 0;
+  background: #ffffff !important; 
+  
+  ion-item {
+    --background: #ffffff !important; /* Fondo blanco para cada opción */
+    --color: #1e293b !important;      /* Texto gris oscuro de alta visibilidad */
+    --padding-start: 16px;
+    --inner-padding-end: 16px;
+    --min-height: 48px;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+    
+    ion-icon {
+      color: #64748b !important; /* Iconos en gris elegante por defecto */
+      font-size: 20px;
+      margin-right: 12px;
+      transition: color 0.2s ease;
+    }
+    
+    /* Efecto al pasar el cursor sobre las opciones */
+    &:hover {
+      --background: #f8fafc !important;
+      
+      ion-icon { 
+        color: var(--app-primary) !important; /* Cambia al azul Domapps */
+      }
+      
+      &.upload-icon {
+        color: #10b981 !important; /* Si es el de subir, cambia a verde */
+      }
+    }
+  }
+}
+
+/* Línea separadora limpia */
+.menu-divider {
+  height: 1px;
+  background-color: #e2e8f0 !important;
+  margin: 8px 0;
+}
+
+/* ==========================================================================
+   ✨ ESTILOS DEL MODAL INLINE DE EXPORTACIÓN (Anti-Modo Oscuro)
+   ========================================================================== */
+
+::ng-deep {
+  /* 1. Geometría y fondo blanco forzado para el Modal */
+  ion-modal.custom-inline-modal {
+    --width: 90%;
+    --max-width: 450px;
+    --height: auto;
+    --border-radius: 16px;
+    --box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    --background: #ffffff !important; 
+  }
+
+  /* 2. Escudo contra el fondo negro en los Inputs y Selects */
+  .custom-inline-modal {
+    .custom-input-item { 
+      --background: #f8fafc !important; 
+      background: #f8fafc !important;
+      --border-radius: 8px; 
+      --padding-start: 12px; 
+      --padding-end: 12px;
+      border: 1px solid #e2e8f0; 
+      border-radius: 8px; 
+      width: 100%; 
+      min-height: 48px;
+      --color: #1e293b !important;
+      color: #1e293b !important;
+    }
+    
+    ion-input { 
+      --color: #1e293b !important; 
+      color: #1e293b !important;
+      font-size: 14px; 
+    }
+    
+    .custom-form-select { 
+      width: 100%; 
+      --placeholder-color: #94a3b8 !important; 
+      --placeholder-opacity: 1; 
+      font-size: 14px; 
+      --color: #1e293b !important;
+      color: #1e293b !important;
+    }
+    
+    .custom-form-select::part(icon) { 
+      color: #94a3b8; 
+      opacity: 1; 
+    }
+  }
+}
+
+/* 3. Textos, separadores y etiquetas del formulario */
+.form-wrapper {
+  background: #ffffff;
+  padding: 16px;
+  height: auto;         // Se ajusta al contenido
+  min-height: 200px;    // Para que tenga altura mínima si está vacío
+}
+
+form {
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  // Los elementos dentro del formulario deben tener altura automática
+}
+
+.section-title { 
+  font-size: 13px; 
+  font-weight: 700; 
+  color: #64748b; 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px; 
+  margin: 15px 0; 
+  display: flex; 
+  align-items: center; 
+  gap: 6px; 
+}
+
+.divider { height: 1px; background: #e2e8f0; margin: 20px 0; }
+
+.input-group { margin-bottom: 16px; }
+
+.field-label { 
+  display: flex; 
+  align-items: center; 
+  gap: 6px; 
+  font-size: 13px; 
+  font-weight: 600; 
+  color: #475569; 
+  margin-bottom: 6px; 
+}
+
+/* 4. Estilos especiales para el botón del calendario */
+.date-item {
+  position: relative;
+  padding: 0 !important;
+  --padding-start: 0 !important;
+  --padding-end: 0 !important;
+  --inner-padding-end: 0 !important;
+}
+
+.date-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.date-trigger-btn {
+  --background: transparent !important;
+  --background-hover: #f1f5f9 !important;
+  --color: #1e293b !important;
+  color: #1e293b !important;
+  --border-radius: 8px;
+  width: 100%;
+  height: 48px;
+  justify-content: flex-start;
+  padding: 0 12px;
+  font-weight: 500;
+  text-transform: none;
+  margin: 0;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  
+  .calendar-icon {
+    font-size: 22px;
+    color: #0284c7;
+    margin-right: 10px;
+  }
+  
+  .date-display {
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 500;
+  }
+}

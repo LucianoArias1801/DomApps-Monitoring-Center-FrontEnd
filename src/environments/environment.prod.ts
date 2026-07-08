@@ -5,5 +5,5 @@ export const environment = {
   // URL de producción 
   apiUrl: 'https://qa.domapps.ai/domapps-monitoring-center-api',
   // Llave de seguridad de producción
-  apiKey: 'domapps_master_key_2026'
+  apiKey: 'domapps_monitoring_center_api_key_456'
 };
